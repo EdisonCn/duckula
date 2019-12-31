@@ -78,7 +78,7 @@ public class IndexManager {
 		if (!esclientmap.containsKey(cluster)) {
 			synchronized (IndexManager.class) {
 				if (!esclientmap.containsKey(cluster)) {
-					Properties configMiddleware =ConfUtil.configMiddleware(MiddlewareType.es, cluster);
+					Properties configMiddleware = ConfUtil.configMiddleware(MiddlewareType.es, cluster);
 					ESClient eSClient = new ESClient(configMiddleware);
 					esclientmap.put(cluster, eSClient);
 				}
@@ -201,8 +201,8 @@ public class IndexManager {
 	}
 
 	public TextStreamResponse onQueryMiddlewareType(String middlewareTypeStr) {
-		if(StringUtil.isNull(middlewareTypeStr)) {
-			return TapestryAssist.getTextStreamResponse("[]"); 
+		if (StringUtil.isNull(middlewareTypeStr)) {
+			return TapestryAssist.getTextStreamResponse("[]");
 		}
 		MiddlewareType middlewareType = MiddlewareType.valueOf(middlewareTypeStr);
 		String eleJson = middlewareType.getEleJson();
@@ -241,8 +241,9 @@ public class IndexManager {
 	}
 
 	public TextStreamResponse onCreateIndex() {
-		//String requestPayload = J2EEAssist.getRequestPayload(requestGlobals.getHTTPServletRequest());///////////////////////////////////////////////zjh
-		//System.out.println(requestPayload);
+		// String requestPayload =
+		// J2EEAssist.getRequestPayload(requestGlobals.getHTTPServletRequest());///////////////////////////////////////////////zjh
+		// System.out.println(requestPayload);
 		final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
 		// request.
 
@@ -270,13 +271,14 @@ public class IndexManager {
 	}
 
 	public TextStreamResponse onSave(String cluster) {
-		String requestPayload = J2EEAssist.getRequestPayload(requestGlobals.getHTTPServletRequest());///////////////////////////////////////////////zjh
+		String requestPayload = J2EEAssist.getRequestPayload(requestGlobals.getHTTPServletRequest());/////////////////////////////////////////////// zjh
 		System.out.println(requestPayload);
-		
+
 		JSONObject json = JSONUtil.getJsonFromUrlStr(requestPayload);
-		final Mapping mappingparam = JSONUtil.getBeanFromJson(Mapping.class,  json);
-		
-		//final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
+		final Mapping mappingparam = JSONUtil.getBeanFromJson(Mapping.class, json);
+
+		// final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class,
+		// requestGlobals);
 		if (StringUtil.isNull(mappingparam.getContent())) {
 			DbInstance temp = ZkClient.getInst().getDateObj(
 					String.format("%s/%s", ZkPath.dbinsts.getRoot(), mappingparam.getDbinst()), DbInstance.class);
@@ -307,14 +309,16 @@ public class IndexManager {
 		} catch (Exception e) {
 			return TapestryAssist.getTextStreamResponse(Result.getError(e.getMessage()));
 		}
-
+		Result createIndex=null;
 		if (StringUtil.isNotNull(mappingparam.getId())) {// 修改
-			getESClient(cluster).indexDel(mappingparam.getIndex());
+			// 为了安全，不删除索引
+			// getESClient(cluster).indexDel(mappingparam.getIndex());
+			createIndex=Result.getSuc();
 		} else {
 			mappingparam.setId(mappingparam.getIndex() + "-" + mappingparam.getType());
+			createIndex = getESClient(cluster).indexCreate(mappingparam.getIndex(), mappingparam.getType(),
+					mappingparam.getShardsNum(), mappingparam.getReplicas(), null, proMappingBean);
 		}
-		Result createIndex = getESClient(cluster).indexCreate(mappingparam.getIndex(), mappingparam.getType(),
-				mappingparam.getShardsNum(), mappingparam.getReplicas(), null, proMappingBean);
 		if (!createIndex.isSuc()) {
 			return TapestryAssist.getTextStreamResponse(createIndex);
 		}
@@ -325,14 +329,15 @@ public class IndexManager {
 
 	public TextStreamResponse onDel(String cluster) {
 		final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
-		Result indexDel = getESClient(cluster).indexDel(mappingparam.getIndex());
-		if(!indexDel.isSuc()&& indexDel.getMessage().contains("index_not_found_exception")) {//如果没有找到可以放过
-			indexDel=Result.getSuc();
-		}		
-		if (indexDel.isSuc()) {
-			ZkUtil.del(ZkPath.mappings, mappingparam.getId());
-		}
-		return TapestryAssist.getTextStreamResponse(indexDel);
+		// Result indexDel = getESClient(cluster).indexDel(mappingparam.getIndex());
+		// if(!indexDel.isSuc()&&
+		// indexDel.getMessage().contains("index_not_found_exception")) {//如果没有找到可以放过
+		// indexDel=Result.getSuc();
+		// }
+		// if (indexDel.isSuc()) {
+		ZkUtil.del(ZkPath.mappings, mappingparam.getId());
+		// }
+		return TapestryAssist.getTextStreamResponse(Result.getSuc());
 	}
 
 	@Property

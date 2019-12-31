@@ -148,7 +148,7 @@ public class OpsManager {
 			}
 			int hostNum = posShow.getHostNum();
 			JSONObject taskobj = new JSONObject();
-
+			taskobj.put("namespace", StringUtil.hasNull(buidlTask.getNamespace(),""));
 			if (hostNum == 0) {
 				if (buidlTask.getRun() == YesOrNo.yes) {
 					taskobj.put("status", "DOWN");
@@ -185,7 +185,8 @@ public class OpsManager {
 			JSONObject consumerobj = new JSONObject();
 			consumerobj.put("run", consumer.getRun().name());
 			consumerobj.put("groupId", consumer.getGroupId());
-
+			Task buidlTask = ZkUtil.buidlTask(consumer.getTaskOnlineId());
+			consumerobj.put("namespace", StringUtil.hasNull(buidlTask.getNamespace(),""));
 			if (TaskPattern.isNeedServer()) {
 				List<String> serverids = duckulaAssit.lockToServer(findAllServers, ZkPath.consumers, consumer.getId());
 				consumerobj.put("runserver", CollectionUtil.listJoin(serverids, ","));
