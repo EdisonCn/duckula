@@ -21,7 +21,7 @@ RUN set -ex; \
 COPY ./duckula.tar  /opt/
 COPY ./duckula-data.tar  /data/
 COPY ./export/config.yaml  /
-COPY ./export/jmx_prometheus_javaagent-0.3.1.jar  /
+COPY ./export/jmx_prometheus_javaagent-0.12.0.jar  /
 RUN tar -xf /opt/duckula.tar -C /opt/ --strip-components=0; \
 #    tar -xf /data/duckula-data.tar -C /data/ --strip-components=0; \
     rm -rf /opt/duckula.tar; \
@@ -50,7 +50,7 @@ COPY ./docker-entrypoint/docker-entrypoint.sh  /
 RUN set -ex; \
     chmod  +x  /docker-entrypoint.sh; \
     chmod  777  /config.yaml; \
-    chmod 444  /jmx_prometheus_javaagent-0.3.1.jar; 
+    chmod 444  /jmx_prometheus_javaagent-0.12.0.jar; 
 #2723:jmx,jmxexport:2780,2113:debug,8080:web
 EXPOSE 2723 2780 2113
 ENTRYPOINT ["/docker-entrypoint.sh"]

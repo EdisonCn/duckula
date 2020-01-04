@@ -44,13 +44,25 @@ public class BinlogControl implements BinlogControlMBean {
 
 	// long类型也不支持export，只支持int和double ,int能支持68年，到2038
 	@Override
-	public int getCurPos() {
-		return new Long(taskConf.getCurPos().getTime()).intValue();
+	public long getCurPos() {
+		return taskConf.getCurPos().getTime();
 	}
 
 	@Override
 	public Count getCount() {
 		return taskConf.getCurCount();
+	}
+
+	@Override
+	public int getUndoSize() {
+		long undoSize = Main.getProducer().getCounter().getUndoSize();
+		return new Long(undoSize).intValue();
+	}
+
+	@Override
+	public int getDelayTime() {
+		long deff = System.currentTimeMillis() - taskConf.getCurPos().getTime() * 1000;
+		return new Long(deff).intValue();
 	}
 
 }

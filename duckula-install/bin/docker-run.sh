@@ -33,7 +33,7 @@ JAVA_JMX="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenti
 JAVA_DEFAULT_OPT="-server -XX:+HeapDumpOnOutOfMemoryError -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:$DUCKULA_DATA/logs/gc/$1/gc.log"
 LOG_ROOT="-DlogRoot=$DUCKULA_DATA/logs/task/$1"
 #jmxexport代理
-JMX_EXPORT="-javaagent:/jmx_prometheus_javaagent-0.3.1.jar=2780:/config.yaml"
+JMX_EXPORT="-javaagent:/jmx_prometheus_javaagent-0.12.0.jar=2780:/config.yaml"
 JAVA_OPTS="${JMX_EXPORT} ${JAVA_MEM_OPTS} ${JAVA_JMX} ${JAVA_DEFAULT_OPT} ${LOG_ROOT} ${JAVA_DEBUGGER}" 
 echo  ${JAVA_OPTS}
 echo "============================serverice started============================================="

@@ -12,8 +12,7 @@ public interface BinlogControlMBean {
 	/***
 	 * 设置是否同步
 	 * 
-	 * @param isSync
-	 *            true:是 false:否
+	 * @param isSync true:是 false:否
 	 */
 	public void putSync(boolean isSync);
 
@@ -24,7 +23,17 @@ public interface BinlogControlMBean {
 	 */
 	public short getSyncStatus();
 
-	public int getCurPos();
+	public long getCurPos();
+
+	public int getDelayTime();
+
+	/***
+	 * 查看没有处理的单元数
+	 * 
+	 * @return
+	 */
+
+	public int getUndoSize();
 
 	public Count getCount();
 }

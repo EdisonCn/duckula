@@ -188,7 +188,7 @@ public class Main {
 		}, 10, 1, TimeUnit.SECONDS);
 	}
 
-	private static void addTimerForLock(String  taskId) {
+	private static void addTimerForLock(String taskId) {
 		ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 		// 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
 		service.scheduleAtFixedRate(new Runnable() {
@@ -340,6 +340,10 @@ public class Main {
 		mbs.registerMBean(control,
 				new ObjectName("net.wicp.tams.duckula:service=Task,name=" + Conf.get("duckula.task.mbean.beanname")));
 		log.info("----------------------MBean注册成功-------------------------------------");
+	}
+
+	public static DisruptorProducer getProducer() {
+		return producer;
 	}
 
 }
