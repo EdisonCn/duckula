@@ -256,7 +256,8 @@ public class MainDump {
 			NotCompliantMBeanException, MalformedObjectNameException {
 		DumpControl control = new DumpControl();
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		mbs.registerMBean(control, new ObjectName("Commons:name=" + Conf.get("duckula.dump.mbean.beanname")));
+		mbs.registerMBean(control,
+				new ObjectName("net.wicp.tams.duckula:service=Dump,name=DuckulaDump"));//+ Conf.get("duckula.dump.mbean.beanname")
 		log.info("----------------------MBean注册成功-------------------------------------");
 	}
 

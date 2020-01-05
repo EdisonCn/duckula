@@ -338,7 +338,7 @@ public class Main {
 		// control.setLock(lock);
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		mbs.registerMBean(control,
-				new ObjectName("net.wicp.tams.duckula:service=Task,name=" + Conf.get("duckula.task.mbean.beanname")));
+				new ObjectName("net.wicp.tams.duckula:service=Task,name=DuckulaTask"));//+ Conf.get("duckula.task.mbean.beanname")
 		log.info("----------------------MBean注册成功-------------------------------------");
 	}
 

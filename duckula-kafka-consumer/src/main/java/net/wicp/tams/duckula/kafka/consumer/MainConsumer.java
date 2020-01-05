@@ -213,7 +213,8 @@ public class MainConsumer {
 		ConsumerControl control = new ConsumerControl();
 		control.setLock(lock);
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		mbs.registerMBean(control, new ObjectName("Commons:name=" + Conf.get("duckula.consumer.mbean.beanname")));
+		mbs.registerMBean(control,
+				new ObjectName("net.wicp.tams.duckula:service=Consumer,name=DuckulaConsumer"));// + Conf.get("duckula.consumer.mbean.beanname")
 		log.info("----------------------MBean注册成功-------------------------------------");
 	}
 
