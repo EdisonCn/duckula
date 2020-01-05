@@ -87,7 +87,7 @@
 								<param>duckula-serializer-thrift</param>
 							</serializers>
 							<env>
-								test
+							    dev
 							</env>
 							<busis>
 								<param>duckula-busi-filter</param>

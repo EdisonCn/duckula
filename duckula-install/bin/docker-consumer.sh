@@ -32,7 +32,9 @@ fi
 JAVA_JMX="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=$2 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.ssl=false"
 JAVA_DEFAULT_OPT="-server -XX:+HeapDumpOnOutOfMemoryError -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:$DUCKULA_DATA/logs/gc/$1/gc.log"
 LOG_ROOT="-DlogRoot=$DUCKULA_DATA/logs/consumer/$1"
-JAVA_OPTS="${JAVA_MEM_OPTS} ${JAVA_JMX} ${JAVA_DEFAULT_OPT} ${LOG_ROOT} ${JAVA_DEBUGGER}" 
+#jmxexport代理
+JMX_EXPORT="-javaagent:/jmx_prometheus_javaagent-0.12.0.jar=2780:/config.yaml"
+JAVA_OPTS="${JMX_EXPORT} ${JAVA_MEM_OPTS} ${JAVA_JMX} ${JAVA_DEFAULT_OPT} ${LOG_ROOT} ${JAVA_DEBUGGER}"
 echo  ${JAVA_OPTS}
 echo "============================serverice started============================================="
 java  ${JAVA_OPTS}  -jar $DUCKULA_HOME/duckula-kafka-consumer.jar  $1
