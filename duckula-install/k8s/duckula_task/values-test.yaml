@@ -30,11 +30,14 @@ hosts:
  
 service:
   type: ClusterIP
-  jmxexport:
-    port: 8080
+  jmx:
+    port: 2723
     # nodePort: 32000
-  debugport:
+  containerPort:
     port: 2780
+    # nodePort: 32000
+  debug:
+    port: 2113
     # nodePort: 32001
 #持久化
 persistence:
@@ -148,6 +151,7 @@ userconfig:
 podAnnotations: 
   prometheus.io/scrape: "true"
   prometheus.io/port: "2780"
+  prometheus.io/path: "/"
 
 #dump请调整此资源
 resources:

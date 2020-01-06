@@ -53,7 +53,7 @@ spec:
         ports:
         - name: jmx
           containerPort: 2723
-        - name: jmxexport
+        - name: http-metrics
           containerPort: 2780
         - name: debug
           containerPort: 2113
