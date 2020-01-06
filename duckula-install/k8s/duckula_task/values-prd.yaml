@@ -1,5 +1,5 @@
 image: registry.choerodon.xforceplus.com/rjzjh/duckula
-imageTaskTag: task.2.3.0
+imageTaskTag: task.2.0.9
 imagePullPolicy: IfNotPresent
 #运行的命令 docker-run.sh:监听mysql  docker-consumer.sh：kafka监听  docker-dump.sh: 全量导入
 cmd:  docker-run.sh
@@ -37,16 +37,12 @@ hosts:
  
 service:
   type: ClusterIP
-  jmx:
-    port: 2723
+  jmxexport:
+    port: 8080
     # nodePort: 32000
-  containerPort:
+  debugport:
     port: 2780
-    # nodePort: 32000
-  debug:
-    port: 2113
     # nodePort: 32001
-    
 #持久化
 persistence:
   enabled: false
@@ -180,10 +176,7 @@ userconfig:
       common.redis.cachecloud.cachecloud_report_url = /cachecloud/client/reportData.json
     
     
-podAnnotations: 
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "2780"
-  prometheus.io/path: "/"
+podAnnotations: {}
 
 #dump请调整此资源
 resources:
