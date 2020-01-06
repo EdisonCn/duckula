@@ -33,7 +33,7 @@
         ports:
         - name: jmx
           containerPort: 2723
-        - name: jmxexport
+        - name: jmxexporter
           containerPort: 2780
         - name: debug
           containerPort: 2113
