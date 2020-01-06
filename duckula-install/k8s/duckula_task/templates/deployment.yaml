@@ -55,6 +55,8 @@ spec:
           containerPort: 2723
         - name: http-metrics
           containerPort: 2780
+        - name: jmxexport
+          containerPort: 2780
         - name: debug
           containerPort: 2113
         livenessProbe:
