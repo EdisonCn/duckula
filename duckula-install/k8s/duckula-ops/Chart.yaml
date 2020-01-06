@@ -1,5 +1,5 @@
 name: duckula-ops
-version: 0.0.1
+version: 2.3.0
 appVersion: 2.0
 description: binlog监听，数据实时推送
 keywords:

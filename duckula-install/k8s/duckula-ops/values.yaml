@@ -1,6 +1,6 @@
 image: registry.cn-shanghai.aliyuncs.com/rjzjh/duckula
-imageOpsTag: ops.2.2.9
-imageDataTag: data.2.2.9
+imageOpsTag: ops.2.3.0
+imageDataTag: data.2.3.0
 imagePullPolicy: IfNotPresent
 env:
   zk: docker.for.win.localhost:2181
