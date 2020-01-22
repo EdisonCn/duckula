@@ -26,7 +26,8 @@
 		<module>duckula-kafka-consumer</module>
 
 		<module>duckula-plugin-kafka-idempotent</module>
-		
+
+		<module>duckula-plugin-cassandra</module>
 	</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
@@ -65,6 +66,8 @@
 		<log4j.version>2.6.2</log4j.version>
 		<!-- dev版本 -->
 		<duckula.version>2.0.3</duckula.version>
+		<!-- 与cassandra 3.7.2版本相配 -->
+		<metrics.version>3.2.2</metrics.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -146,6 +149,11 @@
 			<dependency>
 				<groupId>net.wicp.tams</groupId>
 				<artifactId>duckula-plugin-redis</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.wicp.tams</groupId>
+				<artifactId>duckula-plugin-cassandra</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

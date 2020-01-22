@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -43,7 +42,6 @@ import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.Consumer;
 import net.wicp.tams.duckula.common.beans.Task;
-import net.wicp.tams.duckula.common.constant.MiddlewareType;
 import net.wicp.tams.duckula.common.constant.PluginType;
 import net.wicp.tams.duckula.kafka.consumer.MainConsumer;
 import net.wicp.tams.duckula.plugin.pluginAssit;
@@ -56,7 +54,6 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 	protected final Consumer consumer;
 	protected final IBusiConsumer<T> busiEs;
 	protected Connection connection = DruidAssit.getConnection();// TODO 每线程一个连接
-	private Map<Rule, PreparedStatement> statMap = new HashMap<>();
 	protected Map<String, String[]> primarysMap = new HashMap<>();
 	protected Map<String, String[]> colsMap = new HashMap<>();
 
@@ -200,7 +197,14 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 		}
 	}
 
-	public void duckulaEventToDatas(List<T> datas, DuckulaEvent duckulaEvent, Rule rule) {
+	/***
+	 * 数据转换
+	 * 
+	 * @param datas        要还回的转换数据
+	 * @param duckulaEvent 原始数据
+	 * @param rule         规则
+	 */
+	private void duckulaEventToDatas(List<T> datas, DuckulaEvent duckulaEvent, Rule rule) {
 		try {
 			if (rule == null) {
 				rule = findReule(consumer, duckulaEvent.getDb(), duckulaEvent.getTb());
@@ -281,7 +285,7 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 				}
 				try {
 					rs.close();
-					preparedStatement.close();		
+					preparedStatement.close();
 					connection.close();
 				} catch (Exception e) {
 					log.error("关闭es失败", e);

@@ -12,6 +12,8 @@ public enum SenderEnum implements IEnumCombobox {
 	es("es搜索", "/sender/duckula-plugin-elasticsearch/", MiddlewareType.es,false),
 
 	redis("redis缓存", "/sender/duckula-plugin-redis/", MiddlewareType.redis,false),
+	
+	cassandra("cassandra存储", "/sender/duckula-plugin-cassandra/", MiddlewareType.redis,false),
 
 	// ons("ons消息", "net.wicp.tams.commons.binlog.sender.impl.SenderOns"),
 

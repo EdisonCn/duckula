@@ -18,6 +18,8 @@ public enum MiddlewareType implements IEnumCombobox {
 	kafka("kafka",true),
 
 	es("elasticsearch",false),
+	
+	cassandra("cassandra",false),
 
 	redis("redis",true);
 
