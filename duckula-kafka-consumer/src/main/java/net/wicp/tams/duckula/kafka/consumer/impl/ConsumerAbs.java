@@ -207,7 +207,7 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 	private void duckulaEventToDatas(List<T> datas, DuckulaEvent duckulaEvent, Rule rule) {
 		try {
 			if (rule == null) {
-				rule = findReule(consumer, duckulaEvent.getDb(), duckulaEvent.getTb());
+				rule = findReule(duckulaEvent.getDb(), duckulaEvent.getTb());
 				if (rule == null) {
 					return;
 				}
@@ -310,10 +310,10 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 
 	private Map<String, Rule> ruleMap = new HashMap<>();// 原始数据对应的规则
 
-	private Rule findReule(Consumer consumer, String db, String tb) {
+	protected Rule findReule( String db, String tb) {
 		String key = String.format("%s.%s", db, tb);
 		if (ruleMap.get(key) == null) {
-			Rule findRule = consumer.findRule(db, tb);
+			Rule findRule = this.consumer.findRule(db, tb);
 			ruleMap.put(key, findRule);
 		}
 		return ruleMap.get(key);

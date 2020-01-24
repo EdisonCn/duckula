@@ -62,7 +62,7 @@ public class ReceiveKafka extends ReceiveAbs {
 					duckulaPackage.getEventTable().getTb());
 			try {
 				ProducerRecord<String, byte[]> message = new ProducerRecord<String, byte[]>(topic,
-						partitions < 2 ? 0 : Math.abs(partition(splitValue, partitions)), key,
+						partitions < 2 ? 0 : StringUtil.partition(splitValue, partitions), key,
 						JSONObject.toJSONString(dataMap).getBytes("UTF-8"));
 				producer.send(message, new Callback() {
 					@Override
@@ -103,7 +103,7 @@ public class ReceiveKafka extends ReceiveAbs {
 
 			try {
 				ProducerRecord<String, byte[]> message = new ProducerRecord<String, byte[]>(topic,
-						partitions < 2 ? 0 : Math.abs(partition(singleRecord.getKey(), partitions)), key,
+						partitions < 2 ? 0 : StringUtil.partition(singleRecord.getKey(), partitions), key,
 						singleRecord.getData());
 
 				producer.send(message, new Callback() {
@@ -129,19 +129,14 @@ public class ReceiveKafka extends ReceiveAbs {
 		}
 	}
 
-	private int partition(String value, int partitions) {
-		long valueL = 0;
-		if (StringUtil.isNull(value)) {// 防止第1列或分库分表键的值为空值的情况
-			return 0;
-		}
-		try {
-			valueL = Long.parseLong(value);
-		} catch (Exception e) {
-			valueL = MurmurHash3.murmurhash3_x86_32(value, 0, value.length(), 25342);// 种子25342
-																						// //有可能产生负数如"f9ce4495-2b42-4839-8d9a-3ba03c7c1ce8"
-		}
-		return (int) valueL % partitions;
-	}
+	/*
+	 * private int partition(String value, int partitions) { long valueL = 0; if
+	 * (StringUtil.isNull(value)) {// 防止第1列或分库分表键的值为空值的情况 return 0; } try { valueL =
+	 * Long.parseLong(value); } catch (Exception e) { valueL =
+	 * MurmurHash3.murmurhash3_x86_32(value, 0, value.length(), 25342);// 种子25342 //
+	 * //有可能产生负数如"f9ce4495-2b42-4839-8d9a-3ba03c7c1ce8" } return (int) valueL %
+	 * partitions; }
+	 */
 
 	@Override
 	public boolean isSync() {

@@ -227,7 +227,7 @@ public class ConsumerManager {
 		final Consumer consumerparam = TapestryAssist.getBeanFromPage(Consumer.class, requestGlobals);
 		List<Rule> ruleList = consumerparam.getRuleList();
 		for (Rule rule : ruleList) {
-			if (StringUtil.isNull(rule.getItems().get(RuleItem.key))) {
+			if (StringUtil.isNull(rule.getItems().get(RuleItem.key))&&consumerparam.getSenderConsumerEnum() != SenderConsumerEnum.no) {
 				return TapestryAssist.getTextStreamResponse(Result
 						.getError(String.format("db:%s,tb:%s,需要设置idkey", rule.getDbPattern(), rule.getTbPattern())));
 			}
@@ -243,6 +243,12 @@ public class ConsumerManager {
 							|| StringUtil.isNull(rule.getItems().get(RuleItem.dbtb)))) {
 				return TapestryAssist.getTextStreamResponse(Result.getError(String
 						.format("db:%s,tb:%s,jdbc发送者需要设置dbinstanceid和dbtb", rule.getDbPattern(), rule.getTbPattern())));
+			}
+			
+			if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.kafka
+					&& StringUtil.isNull(rule.getItems().get(RuleItem.topic))) {
+				return TapestryAssist.getTextStreamResponse(Result.getError(
+						String.format("db:%s,tb:%s,kafka发送者需要设置topic.", rule.getDbPattern(), rule.getTbPattern())));
 			}
 		}
 		Stat stat = ZkUtil.exists(ZkPath.consumers, consumerparam.getId());
