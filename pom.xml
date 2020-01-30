@@ -32,18 +32,18 @@
 	<parent>
 		<groupId>net.wicp.tams</groupId>
 		<artifactId>parent</artifactId>
-		<version>45</version>
+		<version>46</version>
 	</parent>
 	<properties>
 		<java.version>1.8</java.version>
 		<autoconfig.path>${user.home}/antx-config/${devModel}</autoconfig.path>
-		<common.apiext.version>3.6.6</common.apiext.version>
+		<common.apiext.version>3.6.7</common.apiext.version>
 		<common.connector.version>3.6.5</common.connector.version>
 		<common.http.version>3.6.0</common.http.version>
 		<common.metrics.version>3.6.4</common.metrics.version>
 		<common.micro.version>4.0.0</common.micro.version>
 		<common.spring.version>3.6.1</common.spring.version>
-		<common.others.version>3.6.4</common.others.version>
+		<common.others.version>3.6.7</common.others.version>
 		<common.web.version>3.6.0</common.web.version>
 		<common.grpc.version>3.6.0</common.grpc.version>
 		<common.binlog.version>3.6.0</common.binlog.version>
@@ -55,7 +55,8 @@
 		<common.os.version>3.6.0</common.os.version>
 		<common.redis.version>3.6.3</common.redis.version>
 		<common.es.client.version>3.6.6</common.es.client.version>
-		<common.kubernetes.version>3.6.4</common.kubernetes.version>
+		<common.kubernetes.version>3.6.7</common.kubernetes.version>
+		<common.cassandra.version>3.6.7</common.cassandra.version>
 		<common.binlog.alone.version>3.6.6</common.binlog.alone.version>
 		<common.flink.source.binlog.version>3.6.6</common.flink.source.binlog.version>
 		<common.flink.sink.influxdb.version>3.6.6</common.flink.sink.influxdb.version>
@@ -65,7 +66,7 @@
 		<!-- 与parent不同 -->
 		<log4j.version>2.6.2</log4j.version>
 		<!-- dev版本 -->
-		<duckula.version>2.0.3</duckula.version>
+		<duckula.version>2.0.4</duckula.version>
 		<!-- 与cassandra 3.7.2版本相配 -->
 		<metrics.version>3.2.2</metrics.version>
 	</properties>
