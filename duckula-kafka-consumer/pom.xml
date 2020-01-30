@@ -68,6 +68,12 @@
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>common-apiext</artifactId>
 		</dependency>
+		<!--S3 -->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.11.474</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>duckula-kafka-consumer</finalName>

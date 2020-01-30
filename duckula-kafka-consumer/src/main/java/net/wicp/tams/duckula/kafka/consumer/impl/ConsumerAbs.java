@@ -1,5 +1,8 @@
 package net.wicp.tams.duckula.kafka.consumer.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,6 +15,13 @@ import java.util.Properties;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
+import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +32,7 @@ import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.common.apiext.LoggerUtil;
 import net.wicp.tams.common.apiext.StringUtil;
+import net.wicp.tams.common.apiext.TarUtil;
 import net.wicp.tams.common.apiext.TimeAssist;
 import net.wicp.tams.common.apiext.jdbc.JdbcAssit;
 import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
@@ -61,13 +72,37 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 
 	protected final boolean isIde;
 
+	protected final JSONObject configObject;
+
 	@SuppressWarnings("unchecked")
 	public ConsumerAbs(Consumer consumer) {
 		this.consumer = consumer;
+		this.configObject = ConfUtil.getConfigGlobal();
 		if (StringUtil.isNotNull(consumer.getBusiPlugin())) {
+			String plugDir = consumer.getBusiPlugin().replace(".tar", "");
+			String plugDirSys = IOUtil.mergeFolderAndFilePath(PluginType.consumer.getPluginDir(false), plugDir);
 			try {
-				String plugDir = consumer.getBusiPlugin().replace(".tar", "");
-				String plugDirSys = IOUtil.mergeFolderAndFilePath(PluginType.consumer.getPluginDir(false), plugDir);
+				File dir = new File(plugDirSys);
+				if (!dir.exists()||!dir.isDirectory()) {// 是否存在插件目录
+					AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(this.configObject.getString("region"))
+							.withCredentials(new AWSStaticCredentialsProvider(
+									new BasicAWSCredentials(this.configObject.getString("accessKey"),
+											this.configObject.getString("secretKey"))))
+							.build();
+					String key = IOUtil.mergeFolderAndFilePath(PluginType.consumer.getPluginDirKey(),
+							consumer.getBusiPlugin());
+					String tarFileName= plugDirSys+".tar";
+					getObjectForFile(s3, this.configObject.getString("bucketName"), key,tarFileName);
+					// 解压
+					TarUtil.decompress(tarFileName);
+				}
+			} catch (Exception e) {
+				log.error("下载业务插件及解压失败", e);
+				LoggerUtil.exit(JvmStatus.s9);
+				throw new RuntimeException("下载业务插件及解压失败");
+			}
+
+			try {
 				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 				Plugin plugin = pluginAssit.newPlugin(plugDirSys,
 						"net.wicp.tams.duckula.plugin.receiver.consumer.IBusiConsumer", classLoader,
@@ -310,12 +345,46 @@ public abstract class ConsumerAbs<T> implements IConsumer<byte[]> {
 
 	private Map<String, Rule> ruleMap = new HashMap<>();// 原始数据对应的规则
 
-	protected Rule findReule( String db, String tb) {
+	protected Rule findReule(String db, String tb) {
 		String key = String.format("%s.%s", db, tb);
 		if (ruleMap.get(key) == null) {
 			Rule findRule = this.consumer.findRule(db, tb);
 			ruleMap.put(key, findRule);
 		}
 		return ruleMap.get(key);
+	}
+
+	/**
+	 * 获取消息数据保存新的文件
+	 * 
+	 * @param bucketName
+	 * @param keyName
+	 * @param savePath
+	 */
+	private void getObjectForFile(AmazonS3 s3, String bucketName, String keyName, String savePath) {
+		S3ObjectInputStream s3is = null;
+		FileOutputStream fos = null;
+		try {
+			S3Object o = s3.getObject(bucketName, keyName);
+			s3is = o.getObjectContent();
+			fos = new FileOutputStream(new File(StringUtil.isNotNull(savePath) ? savePath : keyName));
+			IOUtil.copyInToOut(s3is, fos);
+		} catch (Exception e) {
+			log.error("取得s3文件失败", e);
+			throw new RuntimeException("取得s3文件失败");
+		} finally {
+			try {
+				if (s3is != null) {
+					s3is.close();
+				}
+			} catch (IOException e) {
+			}
+			try {
+				if (fos != null) {
+					fos.close();
+				}
+			} catch (Exception e2) {
+			}
+		}
 	}
 }

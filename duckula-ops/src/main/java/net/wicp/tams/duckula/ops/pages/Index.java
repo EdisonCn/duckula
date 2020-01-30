@@ -12,11 +12,21 @@ import org.apache.tapestry5.annotations.Path;
 import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.internal.util.CollectionFactory;
+import org.apache.tapestry5.services.Request;
+import org.apache.tapestry5.util.TextStreamResponse;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+import net.wicp.tams.common.Conf;
+import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.constant.dic.YesOrNo;
 import net.wicp.tams.component.assistbean.Menu;
 import net.wicp.tams.component.constant.ResType;
+import net.wicp.tams.component.tools.TapestryAssist;
+import net.wicp.tams.duckula.common.ZkClient;
+import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.constant.TaskPattern;
 import net.wicp.tams.duckula.ops.beans.SessionBean;
 
@@ -36,6 +46,9 @@ public class Index {
 
 	@InjectPage
 	private Login login;
+
+	@Inject
+	protected Request request;
 
 	@OnEvent(value = "switchMenu")
 	public List<Menu> switchMenu(String moudleId) throws IOException {
@@ -64,6 +77,23 @@ public class Index {
 			}
 		}
 		return retlist;
+	}
+
+	public TextStreamResponse onDataSave() {
+		String saveDataStr = request.getParameter("saveData");
+		JSONObject dgAll = JSONObject.parseObject(saveDataStr);
+		JSONArray rows = dgAll.getJSONArray("rows");
+		System.out.println("rows=" + rows.size());
+		ZkClient.getInst().createOrUpdateNode(Conf.get("duckula.zk.rootpath"), saveDataStr);
+		return TapestryAssist.getTextStreamResponse(Result.getSuc());
+	}
+
+	public TextStreamResponse onDataInit() {
+		String zkDataStr = ZkClient.getInst().getZkDataStr(Conf.get("duckula.zk.rootpath"));
+		if (StringUtil.isNull(zkDataStr)) {
+			zkDataStr = "{\"total\":4,\"rows\":[{\"name\":\"Email\",\"value\":\"***@163.com\",\"group\":\"管理员\",\"editor\":{\"type\":\"validatebox\",\"options\":{\"validType\":\"email\"}}},{\"name\":\"region\",\"value\":\"\",\"group\":\"AWS(亚马逊)\",\"editor\":\"text\"},{\"name\":\"accessKey\",\"value\":\"\",\"group\":\"AWS(亚马逊)\",\"editor\":\"text\"},{\"name\":\"secretKey\",\"value\":\"\",\"group\":\"AWS(亚马逊)\",\"editor\":\"text\"},{\"name\":\"bucketName\",\"value\":\"\",\"group\":\"AWS(亚马逊)\",\"editor\":\"text\"}]}";
+		}
+		return TapestryAssist.getTextStreamResponse(zkDataStr);
 	}
 
 	public Object onActivate() {

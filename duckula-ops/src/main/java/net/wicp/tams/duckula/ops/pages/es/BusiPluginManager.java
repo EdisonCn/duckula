@@ -22,6 +22,13 @@ import org.apache.tapestry5.upload.services.MultipartDecoder;
 import org.apache.tapestry5.util.TextStreamResponse;
 
 import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Result;
@@ -29,12 +36,14 @@ import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.apiext.json.EasyUiAssist;
 import net.wicp.tams.common.callback.IConvertValue;
+import net.wicp.tams.common.callback.impl.convertvalue.ConvertValueEnum;
 import net.wicp.tams.common.constant.DateFormatCase;
 import net.wicp.tams.common.constant.dic.YesOrNo;
 import net.wicp.tams.common.os.bean.FileBean;
 import net.wicp.tams.common.os.pool.SSHConnection;
 import net.wicp.tams.component.services.IReq;
 import net.wicp.tams.component.tools.TapestryAssist;
+import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.BusiPlugin;
@@ -74,40 +83,44 @@ public class BusiPluginManager {
 		if (isNeedServer()) {
 			return "{field:'fileExitServer',width:100,title:'同步状态',formatter:showstatus},";
 		} else {
-			return "";
+			return "{field:'fileExitServer',width:100,title:'同步状态',formatter:showstatus},";
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public TextStreamResponse onQuery() {
-		String pluginpath = PluginType.consumer.getPluginDir(false);
-		File pluginDir = new File(pluginpath);
-		final List<String> fileNames = new ArrayList<>();
-		if (!pluginDir.exists()) {
-			try {
-				FileUtils.forceMkdir(pluginDir);
-			} catch (Exception e) {
-				log.error("创建用户插件目录失败", e);
+		Map<PluginType, List<String>> tempmap = new HashMap<PluginType, List<String>>();
+		for (PluginType pluginType : PluginType.values()) {
+			List<String> templist = tempmap.get(pluginType);
+			if (templist == null) {
+				templist = new ArrayList<String>();
+				tempmap.put(pluginType, templist);
 			}
-		} else {
-			File[] files = pluginDir.listFiles();
-			for (File file : files) {
-				if (!file.isDirectory()) {
-					fileNames.add(file.getName());
+			String pluginpath = pluginType.getPluginDir(false);
+			File pluginDir = new File(pluginpath);
+			if (!pluginDir.exists()) {
+				try {
+					FileUtils.forceMkdir(pluginDir);
+				} catch (Exception e) {
+					log.error("创建用户插件目录失败", e);
+				}
+			} else {
+				File[] files = pluginDir.listFiles();
+				for (File file : files) {
+					if (!file.isDirectory()) {
+						templist.add(file.getName());
+					}
 				}
 			}
 		}
-
-		IConvertValue<String> fileExit = new IConvertValue<String>() {
+		IConvertValue<Object> fileExit = new IConvertValue<Object>() {
 			@Override
-			public String getStr(String pluginFileName) {
-				if (StringUtil.isNull(pluginFileName)) {
+			public String getStr(Object keyObj) {
+				BusiPlugin opsPlug = (BusiPlugin) keyObj;
+				if (!tempmap.get(opsPlug.getPluginType()).contains(opsPlug.getPluginFileName())) {
 					return "否";
-				}
-				if (fileNames.contains(pluginFileName)) {
-					return "是";
 				} else {
-					return "否";
+					return "是";
 				}
 			}
 		};
@@ -131,18 +144,24 @@ public class BusiPluginManager {
 
 		String retstr = null;
 		if (isNeedServer()) {
-			Map<String, List<FileBean>> serverplugs = new HashMap<>();
+			Map<PluginType, Map<String, List<FileBean>>> serverplugs = new HashMap<>();
 			List<Server> servers = ZkUtil.findAllObjs(ZkPath.servers, Server.class);
-
 			for (Server server : servers) {
 				if ("localhost".equals(server.getIp())) {
 					continue;
 				}
 				if (server.getIsInit() == YesOrNo.yes) {
 					SSHConnection conn = DuckulaUtils.getConn(server);
-					List<FileBean> llFiles = conn.llFile(PluginType.consumer.getPluginDir(true), YesOrNo.no);
+					for (PluginType pluginType : PluginType.values()) {
+						List<FileBean> llFiles = conn.llFile(pluginType.getPluginDir(true), YesOrNo.no);
+						Map<String, List<FileBean>> iptopluginsmap = serverplugs.get(server.getIp());
+						if (iptopluginsmap == null) {
+							iptopluginsmap = new HashMap<String, List<FileBean>>();
+							serverplugs.put(pluginType, iptopluginsmap);
+						}
+						iptopluginsmap.put(server.getIp(), llFiles);
+					}
 					DuckulaUtils.returnConn(server, conn);
-					serverplugs.put(server.getIp(), llFiles);
 				}
 			}
 
@@ -155,7 +174,7 @@ public class BusiPluginManager {
 						if ("localhost".equals(server.getIp())) {
 							continue;
 						}
-						List<FileBean> list = serverplugs.get(server.getIp());
+						List<FileBean> list = serverplugs.get(opsPlug.getPluginType()).get(server.getIp());
 						if (list == null) {
 							return "-1";// 服务器上插件不存在
 						}
@@ -185,15 +204,70 @@ public class BusiPluginManager {
 			};
 
 			retstr = EasyUiAssist.getJsonForGrid(retlist,
-					new String[] { "id", "projectName", "update", "lastUpdateTime", "pluginFileName",
-							"pluginFileName,fileExit", ",fileExitServer" },
-					new IConvertValue[] { null, null, null, null, null, fileExit, fileExitServer }, retlist.size());
+					new String[] { "id", "projectName", "pluginType", "pluginType", "update", "lastUpdateTime",
+							"pluginFileName", ",fileExit", ",fileExitServer", "pluginType,pluginType1" },
+					new IConvertValue[] { null, null, null, null, null, null, fileExit, fileExitServer,
+							new ConvertValueEnum(PluginType.class) },
+					retlist.size());
 		} else {
+			JSONObject configGlobal = ConfUtil.getConfigGlobal();
 
+			AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(configGlobal.getString("region")).withCredentials(
+					new AWSStaticCredentialsProvider(new BasicAWSCredentials(configGlobal.getString("accessKey"),
+							configGlobal.getString("secretKey"))))
+					.build();
+			ObjectListing listObjects = s3.listObjects(configGlobal.getString("bucketName"), PluginType.getRootpath());
+			Map<PluginType, List<S3ObjectSummary>> serverplugs = new HashMap<>();
+			for (S3ObjectSummary s3ObjectSummary : listObjects.getObjectSummaries()) {
+				String key = s3ObjectSummary.getKey();
+				for (PluginType pluginType : PluginType.values()) {
+					if (key.startsWith(pluginType.getPluginDirKey())) {
+						List<S3ObjectSummary> templist = serverplugs.get(pluginType);
+						if (templist == null) {
+							templist = new ArrayList<S3ObjectSummary>();
+							serverplugs.put(pluginType, templist);
+						}
+						templist.add(s3ObjectSummary);
+						break;
+					}
+				}
+			}
+			IConvertValue<Object> fileExitServer = new IConvertValue<Object>() {
+				@Override
+				public String getStr(Object keyObj) {// 得到Id
+					BusiPlugin opsPlug = (BusiPlugin) keyObj;
+					// String ret = "0";// -1:有异常，需要处理 0：不存在 1:存在但需要更新 2:存在无需更新
+					List<S3ObjectSummary> list = serverplugs.get(opsPlug.getPluginType());
+					boolean isExit = false;
+					for (S3ObjectSummary s3ObjectSummary : list) {
+						if (s3ObjectSummary.getKey().startsWith(opsPlug.getPluginType().getPluginDirKey())) {
+							try {
+								Date opsDate = DateFormatCase.YYYY_MM_DD_hhmmss.getInstanc()
+										.parse(opsPlug.getLastUpdateTime());
+								if (opsDate.after(s3ObjectSummary.getLastModified())) {
+									return "1";// 插件较旧，需要更新
+								}
+								isExit = true;
+								break;
+							} catch (Exception e) {
+								log.error("插件更新时间比较失败", e);
+								return "-1";// 对比插件时异常
+							}
+						}
+					}
+					if (!isExit) {
+						return "0";// 没有要找的插件
+					} else {
+						return "2";// 插件正常
+					}
+				}
+			};
 			retstr = EasyUiAssist.getJsonForGrid(retlist,
-					new String[] { "id", "projectName", "update", "lastUpdateTime", "pluginFileName",
-							"pluginFileName,fileExit" },
-					new IConvertValue[] { null, null, null, null, null, fileExit }, retlist.size());
+					new String[] { "id", "projectName", "pluginType", "update", "lastUpdateTime", "pluginFileName",
+							",fileExit", ",fileExitServer", "pluginType,pluginType1" },
+					new IConvertValue[] { null, null, null, null, null, null, fileExit, fileExitServer,
+							new ConvertValueEnum(PluginType.class) },
+					retlist.size());
 		}
 		return TapestryAssist.getTextStreamResponse(retstr);
 	}
@@ -207,12 +281,12 @@ public class BusiPluginManager {
 	}
 
 	public void onSaveFile() {
-		String pluginpath = PluginType.consumer.getPluginDir(false);
-		File pluginDir = new File(pluginpath);
-		List<File> uploadlist = req.saveUpload(pluginDir);// 新文件会覆盖旧文件
 		String id = request.getParameter("id");
 		BusiPlugin busiPlugin = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.busiplugins.getPath(id)),
 				BusiPlugin.class);
+		String pluginpath = busiPlugin.getPluginType().getPluginDir(false);
+		File pluginDir = new File(pluginpath);
+		List<File> uploadlist = req.saveUpload(pluginDir);// 新文件会覆盖旧文件
 		File pluginFile = uploadlist.get(0);
 		busiPlugin.setPluginFileName(pluginFile.getName());
 		busiPlugin.setLastUpdateTime(DateFormatCase.YYYY_MM_DD_hhmmss.getInstanc().format(new Date()));
@@ -222,25 +296,38 @@ public class BusiPluginManager {
 
 	public TextStreamResponse onUploadPlug() throws ClientProtocolException, IOException {
 		final BusiPlugin busiPluginSyc = TapestryAssist.getBeanFromPage(BusiPlugin.class, requestGlobals);
-		List<Server> servers = ZkUtil.findAllObjs(ZkPath.servers, Server.class);
-		String plugFilePath = IOUtil.mergeFolderAndFilePath(PluginType.consumer.getPluginDir(false),
+		String plugFilePath = IOUtil.mergeFolderAndFilePath(busiPluginSyc.getPluginType().getPluginDir(false),
 				busiPluginSyc.getPluginFileName());
-		try {
-			for (Server server : servers) {
-				if ("localhost".equals(server.getIp())) {
-					continue;
+		if (!TaskPattern.isNeedServer()) {// k8s版本需要上传文件到s3或oss
+			JSONObject configGlobal = ConfUtil.getConfigGlobal();
+			AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(configGlobal.getString("region")).withCredentials(
+					new AWSStaticCredentialsProvider(new BasicAWSCredentials(configGlobal.getString("accessKey"),
+							configGlobal.getString("secretKey"))))
+					.build();
+			String plugindir = IOUtil.mergeFolderAndFilePath(busiPluginSyc.getPluginType().getPluginDirKey(),
+					busiPluginSyc.getPluginFileName());
+			PutObjectResult putObject = s3.putObject(configGlobal.getString("bucketName"), plugindir,
+					new File(plugFilePath));
+			return TapestryAssist.getTextStreamResponse(Result.getSuc(putObject.getETag()));
+		} else {
+			List<Server> servers = ZkUtil.findAllObjs(ZkPath.servers, Server.class);
+			try {
+				for (Server server : servers) {
+					if ("localhost".equals(server.getIp())) {
+						continue;
+					}
+					SSHConnection conn = DuckulaUtils.getConn(server);
+					conn.scpToDir(plugFilePath, busiPluginSyc.getPluginType().getPluginDir(true));
+					String remoteFile = IOUtil.mergeFolderAndFilePath(busiPluginSyc.getPluginType().getPluginDir(true),
+							busiPluginSyc.getPluginFileName());
+					conn.tarX(remoteFile);
+					DuckulaUtils.returnConn(server, conn);
 				}
-				SSHConnection conn = DuckulaUtils.getConn(server);
-				conn.scpToDir(plugFilePath, PluginType.consumer.getPluginDir(true));
-				String remoteFile = IOUtil.mergeFolderAndFilePath(PluginType.consumer.getPluginDir(true),
-						busiPluginSyc.getPluginFileName());
-				conn.tarX(remoteFile);
-				DuckulaUtils.returnConn(server, conn);
+				return TapestryAssist.getTextStreamResponse(Result.getSuc());
+			} catch (Exception e) {
+				return TapestryAssist.getTextStreamResponse(Result.getError(e.getMessage()));
 			}
-		} catch (Exception e) {
-			return TapestryAssist.getTextStreamResponse(Result.getError(e.getMessage()));
 		}
-		return TapestryAssist.getTextStreamResponse(Result.getSuc());
 	}
 
 	public TextStreamResponse onDel() {

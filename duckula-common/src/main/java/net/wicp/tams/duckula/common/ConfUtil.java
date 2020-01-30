@@ -3,6 +3,9 @@ package net.wicp.tams.duckula.common;
 import java.io.File;
 import java.util.Properties;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
@@ -22,6 +25,17 @@ public abstract class ConfUtil {
 		String datadir =isconfig? Conf.get("duckula.ops.datadir"):System.getenv("DUCKULA_DATA");
 		return datadir;
 	}
+	
+	public static JSONObject getConfigGlobal() {
+		JSONObject zkData = ZkClient.getInst().getZkData(Conf.get("duckula.zk.rootpath"));
+		JSONArray arrays = zkData.getJSONArray("rows");
+		JSONObject retobj = new JSONObject();
+		for (Object object : arrays) {
+			JSONObject data = (JSONObject) object;
+			retobj.put(data.getString("name"), data.getString("value"));
+		}
+		return retobj;
+	};
 	
 	public static void printlnASCII() {
 		String formatestr="-----------------------------------  %s  --------------------------------------------";		

@@ -7,7 +7,7 @@
 </head>
 <body>
    <r:query id="q"  qBlock="query" queryUrl="/es/busiPluginManager:query" uBlock="save"   saveUrl="/es/busiPluginManager:save" deleteUrl="/es/busiPluginManager:del" opFormatter="showopt" 
-        columns="[[{field:'id',width:100,title:'id'},{field:'projectName',width:250,title:'项目名称'},{field:'update',width:100,title:'上传人'},{field:'lastUpdateTime',width:150,title:'上传时间'},{field:'pluginFileName',width:250,title:'插件文件名'},{field:'fileExit',width:100,title:'ops存在'},${colDifferent}{field:'op',width:350,title:'操作'}]]" 
+        columns="[[{field:'id',width:100,title:'id'},{field:'pluginType1',width:250,title:'插件类型'},{field:'projectName',width:250,title:'项目名称'},{field:'update',width:100,title:'上传人'},{field:'lastUpdateTime',width:150,title:'上传时间'},{field:'pluginFileName',width:250,title:'插件文件名'},{field:'fileExit',width:100,title:'ops存在'},${colDifferent}{field:'op',width:350,title:'操作'}]]" 
         dialogStyle="width:800px;height:600px;" initAddHandle="initAdd" saveCheckHandle="saveCheck" pagination="false"/>
    <t:block id="query">
        <table class="frame_table_list_4">
@@ -48,13 +48,15 @@
 			         </td>			        
 			      </tr>
 			      <tr>
+			          <td class="frame_table_list_2_righttext">插件类型</td>
+			         <td>
+			             <r:comboboxenum id="pluginType_save"  name="pluginType" enumClass="net.wicp.tams.duckula.common.constant.PluginType" required="true" include="task,consumer"></r:comboboxenum>
+			          </td>
 			         <td class="frame_table_list_2_righttext">上传者</td>
 			         <td>
 			             <r:validatebox name="update" style="width:280px;" required="true"/>
 	                 </td>
-			         <td class="frame_table_list_2_righttext"></td>
-			         <td>
-			          </td>
+			        
 			      </tr>	  
 			       <tr>
 			         <td class="frame_table_list_2_righttext">备注</td>
@@ -107,7 +109,7 @@
        	    if(needServer){
        	       return update+deletebut+serverbut+syncbut;
        	    }else{
-       	       return update+deletebut+serverbut;
+       	       return update+deletebut+serverbut+syncbut;
        	    } 
      }
      

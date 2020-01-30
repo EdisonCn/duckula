@@ -102,6 +102,12 @@
 			<groupId>com.aliyun</groupId>
 			<artifactId>aliyun-java-sdk-core</artifactId>
 		</dependency>
+		<!--S3 -->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>1.11.474</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
