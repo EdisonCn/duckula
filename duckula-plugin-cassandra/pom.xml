@@ -16,7 +16,6 @@
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>common-cassandra</artifactId>
-			<version>3.6.6</version>
 		</dependency>
 	</dependencies>
 
