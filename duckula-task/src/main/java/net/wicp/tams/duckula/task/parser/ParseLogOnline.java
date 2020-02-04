@@ -48,7 +48,7 @@ public class ParseLogOnline extends BaseLogFetcher {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection(
-					String.format("jdbc:mysql://%s:%s?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC", Main.context.getTask().getIp(),
+					String.format("jdbc:mysql://%s:%s?charset=utf8&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC", Main.context.getTask().getIp(),
 							Main.context.getTask().getPort()),
 					Main.context.getTask().getUser(), Main.context.getTask().getPwd());
 

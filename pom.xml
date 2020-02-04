@@ -46,7 +46,7 @@
 		<common.others.version>3.6.7</common.others.version>
 		<common.web.version>3.6.0</common.web.version>
 		<common.grpc.version>3.6.0</common.grpc.version>
-		<common.binlog.version>3.6.0</common.binlog.version>
+		<common.binlog.version>3.6.7</common.binlog.version>
 		<common.binlog.self.version>3.6.0</common.binlog.self.version>
 		<common.tracer.version>3.6.0</common.tracer.version>
 		<common.hadoop.version>3.6.0</common.hadoop.version>
