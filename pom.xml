@@ -40,13 +40,13 @@
 		<common.apiext.version>3.6.7</common.apiext.version>
 		<common.connector.version>3.6.5</common.connector.version>
 		<common.http.version>3.6.0</common.http.version>
-		<common.metrics.version>3.6.4</common.metrics.version>
+		<common.metrics.version>3.6.8</common.metrics.version>
 		<common.micro.version>4.0.0</common.micro.version>
 		<common.spring.version>3.6.1</common.spring.version>
 		<common.others.version>3.6.7</common.others.version>
 		<common.web.version>3.6.0</common.web.version>
 		<common.grpc.version>3.6.0</common.grpc.version>
-		<common.binlog.version>3.6.7</common.binlog.version>
+		<common.binlog.version>3.6.8</common.binlog.version>
 		<common.binlog.self.version>3.6.0</common.binlog.self.version>
 		<common.tracer.version>3.6.0</common.tracer.version>
 		<common.hadoop.version>3.6.0</common.hadoop.version>
