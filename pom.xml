@@ -187,6 +187,12 @@
 				<artifactId>duckula-kafka-consumer</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<!-- 支持mysql8 -->
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>5.1.47</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
