@@ -85,7 +85,7 @@ public class DuckulaContext {
 	 * @param tb
 	 * @return
 	 */
-	public Rule findRule(String db, String tb) {
+	public Rule findRule(String db, String tb) {		
 		for (Rule rule : this.task.getRuleList()) {
 			if (!"^*$".equals(rule.getDbPattern())) {
 				boolean retdb = StrPattern.checkStrFormat(rule.getDbPattern(), db);

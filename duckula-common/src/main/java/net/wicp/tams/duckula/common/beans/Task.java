@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.constant.dic.YesOrNo;
+import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.constant.BusiEnum;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
 import net.wicp.tams.duckula.common.constant.SenderEnum;
@@ -105,13 +106,37 @@ public class Task {
 		String[] ruleAry = rules.split("&");
 		for (int i = 0; i < ruleAry.length; i++) {
 			String[] ruleValues = ruleAry[i].split("`");
-			if (ruleValues.length == 0 || ruleValues.length != 3) {
-				throw new IllegalArgumentException("规则长度只能为３!");
+			if (ruleValues.length == 0 || (ruleValues.length != 3 && ruleValues.length != 4)) {
+				throw new IllegalArgumentException("规则长度只能为3或4!");
 			}
 			Rule rule = new Rule();
-			rule.setDbPattern(buildPatter(ruleValues[0]));
-			rule.setTbPattern(buildPatter(ruleValues[1]));
-			JSONObject json = JSON.parseObject(ruleValues[2]);
+			
+			String itemStr=ruleValues[2];
+			boolean isdrds=false;
+			if(ruleValues.length>3) {
+				rule.setDrds(ruleValues[2]);
+				itemStr=ruleValues[3];
+				isdrds=true;
+			}
+			if(isdrds) {
+				rule.setDbPattern(String.format("^%s_["+ConfUtil.drdsPattern+"]{4}_[0-9]{4}$", ruleValues[0]));//drds支持
+			}else {
+				rule.setDbPattern(buildPatter(ruleValues[0]));
+			}
+			
+			String dbpatternstr=buildPatter(ruleValues[1]);
+			if(isdrds) {
+				if("dbtb".equals(rule.getDrds())) {
+					dbpatternstr=String.format("^%s_["+ConfUtil.drdsPattern+"]{4}_[0-9]{4}$", ruleValues[1]);//drds支持
+				}else if("db".equals(rule.getDrds())){
+					dbpatternstr=String.format("^%s_["+ConfUtil.drdsPattern+"]{4}$", ruleValues[1]);//drds支持
+				}else if("no".equals(rule.getDrds())){
+					dbpatternstr=ruleValues[1];
+				}
+			}
+			rule.setTbPattern(dbpatternstr);
+			
+			JSONObject json = JSON.parseObject(itemStr);
 			for (String key : json.keySet()) {
 				RuleItem tempItem = RuleItem.get(key);
 				if (tempItem == null) {

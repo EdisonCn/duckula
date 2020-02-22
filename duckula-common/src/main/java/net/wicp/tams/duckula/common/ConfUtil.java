@@ -14,6 +14,8 @@ public abstract class ConfUtil {
 	public static int defaulJmxPort=2723;
 	public static int defaultDebugPort=2113;
 	
+	public static String drdsPattern="0-9a-zA-Z";
+	
 	public static Properties configMiddleware(MiddlewareType middlewareType, String middlewareInst) {
 		String mergeFolderAndFilePath = IOUtil.mergeFolderAndFilePath(System.getenv("DUCKULA_DATA"),
 				String.format("/conf/%s/%s-%s.properties", middlewareType, middlewareType, middlewareInst));
