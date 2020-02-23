@@ -1,6 +1,6 @@
 image: registry.choerodon.xforceplus.com/rjzjh/duckula
-imageOpsTag: ops.2.2.5.1
-imageDataTag: data.2.2.5
+imageOpsTag: ops.2.4.0
+imageDataTag: data.2.4.0
 imagePullPolicy: IfNotPresent
 env:
   zk: 192.168.11.80:2181
@@ -15,7 +15,7 @@ persistence:
   # 指定存储，推荐使用此方式，注意创建的的访问模式为：accessMode: ReadWriteMany
   #existingClaim: duckula-test-duckula-data
   # 快速搭建demo可以使用此方式，要求k8s拥有此storageClass
-  storageClass: xforcecloud-disk-share
+  storageClass: "xforcecloud-disk-share"
   accessMode: ReadWriteMany
   size: 40Gi
   annotations: {}
@@ -25,7 +25,7 @@ userconfig:
     zk.properties: |-
       common.others.zookeeper.constr=null
       #二次重试眨眼时间
-      common.others.zookeeper.sleepTimeMs=10000
+      common.others.zookeeper.sleepTimeMs=1000
       #最大重试次数
       common.others.zookeeper.maxRetries=5
       common.others.zookeeper.sessionTimeoutMs=9000
@@ -86,9 +86,9 @@ userconfig:
       #k8s,此参数需要跟据情况修改为自己的私有镜像库
       #duckula.task.image.name=192.168.137.100:5000/rjzjh/duckula
       duckula.task.image.name=registry.choerodon.xforceplus.com/rjzjh/duckula
-      duckula.task.image.tag=task.2.2.5
+      duckula.task.image.tag=task.2.4.0
       #位点保留最大天数
-      duckula.ops.pos.maxsize=7
+      duckula.ops.pos.maxsize=2
   es:
     es-dev.properties: |-
       #此配置为示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
@@ -148,6 +148,20 @@ userconfig:
       docker.host.ip.192.168.11.58=zk-kafka-02
       docker.host.ip.192.168.11.60=zk-kafka-03
       docker.host.ip.192.168.11.59=zk-kafka-04
+  cassandra:
+    cassandra-dev.properties: |-
+      #commons
+      common.cassandra.pool.default.contactpoint=cassandra.phoenix-t.xforceplus.com
+      common.cassandra.pool.default.port=29042
+      #注意，并不会返回准确的数据，可能稍微多或少一些
+      common.cassandra.pool.default.query.fetchSize=2000
+      #默认一致性水平为ONE ,ANY只支持写
+      common.cassandra.pool.default.query.consistencyLevel=ONE
+      #每个连接允许32请求并发。
+      common.cassandra.pool.default.pooling.maxRequestsPerConnection=32
+      #集群里的机器至少有2个连接。注意是和集群里的每个机器都至少有2个连接。
+      common.cassandra.pool.default.pooling.coreConnectionsPerHost=2
+      common.cassandra.pool.default.pooling.maxConnectionsPerHost=4
   redis:
     redis-dev.properties: |-
       #Redis配置示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
@@ -186,7 +200,7 @@ userconfig:
       common.redis.cachecloud.redis_sentinel_suffix = /cache/client/redis/sentinel/%s.json?clientVersion=
       common.redis.cachecloud.redis_standalone_suffix = /cache/client/redis/standalone/%s.json?clientVersion=
       common.redis.cachecloud.cachecloud_report_url = /cachecloud/client/reportData.json
-
+  
 podAnnotations: {}
 
 resources:
@@ -195,7 +209,7 @@ resources:
     cpu: 200m
   limits:
     memory: 1280Mi
-    cpu: 200m
+    cpu:  200m
 livenessProbe:
   initialDelaySeconds: 30
   periodSeconds: 10
@@ -209,12 +223,3 @@ readinessProbe:
   timeoutSeconds: 1
   successThreshold: 1
   failureThreshold: 3
-hosts:
-- {ip: 192.168.11.61, host: [zk-kafka-01]}
-- {ip: 192.168.11.58, host: [zk-kafka-02]}
-- {ip: 192.168.11.60, host: [zk-kafka-03]}
-- {ip: 192.168.11.59, host: [zk-kafka-04]}
-
-- {ip: 192.168.11.116, host: [node-es1]}
-- {ip: 192.168.11.117, host: [node-es2]}
-- {ip: 192.168.11.118, host: [node-es3]}
