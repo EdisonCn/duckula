@@ -119,7 +119,7 @@ public class Task {
 				isdrds=true;
 			}
 			if(isdrds) {
-				rule.setDbPattern(String.format("^%s_["+ConfUtil.drdsPattern+"]{4}_[0-9]{4}$", ruleValues[0]));//drds支持
+				rule.setDbPattern(String.format(ConfUtil.drdsTbPatternFormat2, ruleValues[0]));//drds支持
 			}else {
 				rule.setDbPattern(buildPatter(ruleValues[0]));
 			}
@@ -127,9 +127,9 @@ public class Task {
 			String dbpatternstr=buildPatter(ruleValues[1]);
 			if(isdrds) {
 				if("dbtb".equals(rule.getDrds())) {
-					dbpatternstr=String.format("^%s_["+ConfUtil.drdsPattern+"]{4}_[0-9]{4}$", ruleValues[1]);//drds支持
+					dbpatternstr=String.format(ConfUtil.drdsTbPatternFormat2, ruleValues[1]);//drds支持
 				}else if("db".equals(rule.getDrds())){
-					dbpatternstr=String.format("^%s_["+ConfUtil.drdsPattern+"]{4}$", ruleValues[1]);//drds支持
+					dbpatternstr=String.format(ConfUtil.drdsTbPatternFormat1, ruleValues[1]);//drds支持
 				}else if("no".equals(rule.getDrds())){
 					dbpatternstr=ruleValues[1];
 				}

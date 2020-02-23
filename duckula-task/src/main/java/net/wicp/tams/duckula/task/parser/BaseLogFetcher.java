@@ -4,9 +4,12 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import io.thekraken.grok.api.Match;
 import io.thekraken.grok.api.exception.GrokException;
@@ -23,6 +26,7 @@ import net.wicp.tams.common.binlog.parser.event.TableMapLogEvent.ColumnInfo;
 import net.wicp.tams.common.binlog.parser.event.XidLogEvent;
 import net.wicp.tams.common.constant.DateFormatCase;
 import net.wicp.tams.common.constant.OptType;
+import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.beans.ColHis;
 import net.wicp.tams.duckula.common.beans.Pos;
 import net.wicp.tams.duckula.plugin.beans.EventTable;
@@ -109,7 +113,10 @@ public abstract class BaseLogFetcher {
 	}
 
 	protected boolean parseRowsEvent(RowsLogEvent event, OptType optType) {
-		if ("mysql".equals(event.getTable().getDbName())) {// 跳过健康检查事件 tb:ha_health_check
+		if (ArrayUtils.contains(ConfUtil.skipdbs, event.getTable().getDbName())
+				|| ArrayUtils.contains(ConfUtil.skiptbs, event.getTable().getTableName())) {// 跳过健康检查事件
+																							// tb:ha_health_check
+																							// 和__drds__systable__leadership__事件
 			return false;
 		}
 		Rule rule = Main.context.findRule(event.getTable().getDbName(), event.getTable().getTableName());

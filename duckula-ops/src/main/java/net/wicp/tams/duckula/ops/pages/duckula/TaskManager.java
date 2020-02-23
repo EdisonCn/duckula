@@ -600,9 +600,9 @@ public class TaskManager {
 			String drds = StringUtil.trimSpace(tempObj.getString("drds"));
 			boolean isDrds = StringUtil.isNotNull(drds);
 			String db = tempObj.getString("db").replaceAll("\\^", "").replaceAll("\\$", "").replaceAll("\\[0-9\\]\\*",
-					"").replaceAll("_\\["+ConfUtil.drdsPattern+"\\]\\{4\\}", "").replaceAll("_\\[0-9\\]\\{4\\}", "");   
+					"").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "").replaceAll("_\\[0-9\\]\\{2,\\}", "");   
 			String tb = tempObj.getString("tb").replaceAll("\\^", "").replaceAll("\\$", "").replaceAll("\\[0-9\\]\\*",
-					"").replaceAll("_\\["+ConfUtil.drdsPattern+"\\]\\{4\\}", "").replaceAll("_\\[0-9\\]\\{4\\}", "");
+					"").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "").replaceAll("_\\[0-9\\]\\{2,\\}", "");
 			buff.append(db + "`");
 			buff.append(tb + "`");
 			if (isDrds) {
