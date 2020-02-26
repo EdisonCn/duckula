@@ -13,7 +13,6 @@ import javax.sql.DataSource;
 import com.alibaba.fastjson.JSONObject;
 
 import lombok.extern.slf4j.Slf4j;
-import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.LoggerUtil;
 import net.wicp.tams.common.apiext.jdbc.JdbcData;
@@ -46,7 +45,7 @@ public class ConsumerMysqlImpl extends ConsumerAbs<JdbcDatas.Builder> {
 		if (dsmap.get(rule) == null) {
 			synchronized (ConsumerMysqlImpl.class) {
 				if (dsmap.get(rule) == null) {
-					Properties copyProperties = Conf.copyProperties();
+					Properties copyProperties = new Properties();
 					String dbInstanceId = rule.getItems().get(RuleItem.dbinstanceid);
 					DbInstance dbInstance = JSONObject.toJavaObject(
 							ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(dbInstanceId)), DbInstance.class);
