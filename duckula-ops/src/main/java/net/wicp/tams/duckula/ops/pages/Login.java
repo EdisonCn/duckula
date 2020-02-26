@@ -1,6 +1,7 @@
 package net.wicp.tams.duckula.ops.pages;
 
 import org.apache.tapestry5.annotations.Import;
+import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.Request;
@@ -24,17 +25,22 @@ public class Login {
 	@SessionState
 	private SessionBean sessionBean;
 
+	@Property
+	@SessionState
+	private String namespace;
+
 	public TextStreamResponse onLogin() {
 		String userName = request.getParameter("userName");
 		String pwd = request.getParameter("pwd");
 		if (StringUtil.isNull(userName) || StringUtil.isNull(pwd)) {
 			return TapestryAssist.getTextStreamResponse(Result.getError("请输入用户名和密码!"));
 		}
-		if (!"admin".equals(userName) || !"admin123".equals(pwd)) {			
+		if (!"admin".equals(userName) || !"admin123".equals(pwd)) {
 			return TapestryAssist.getTextStreamResponse(Result.getError("用户名或密码错误!"));
 		}
 		sessionBean = new SessionBean();
 		sessionBean.setIsLogin(YesOrNo.yes);
+		namespace = "all";
 		return TapestryAssist.getTextStreamResponse(Result.getSuc());
 	}
 
