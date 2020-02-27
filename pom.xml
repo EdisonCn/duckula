@@ -22,7 +22,7 @@
 
 		<module>duckula-busi-filter</module>
 		<module>duckula-plugin-elasticsearch</module>
-		<module>duckula-dump-elasticsearch</module>
+		<module>duckula-dump</module>
 		<module>duckula-kafka-consumer</module>
 
 		<module>duckula-plugin-kafka-idempotent</module>
@@ -37,7 +37,7 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<autoconfig.path>${user.home}/antx-config/${devModel}</autoconfig.path>
-		<common.apiext.version>3.6.8</common.apiext.version>
+		<common.apiext.version>3.6.9</common.apiext.version>
 		<common.connector.version>3.6.5</common.connector.version>
 		<common.http.version>3.6.0</common.http.version>
 		<common.metrics.version>3.6.8</common.metrics.version>
@@ -179,7 +179,7 @@
 			</dependency>
 			<dependency>
 				<groupId>net.wicp.tams</groupId>
-				<artifactId>duckula-dump-elasticsearch</artifactId>
+				<artifactId>duckula-dump</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

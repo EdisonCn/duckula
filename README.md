@@ -41,7 +41,7 @@ duckula专注于数据的实时推送，它分为四大模块：
 - duckula-plugin-kafka-idempotent..........幂等方式发送到kafka
 - duckula-plugin-elasticsearch .................直接发送ES的插件
 - duckula-busi-filter ....................................过虑器插件（暂不用）
-- duckula-dump-elasticsearch ..................全量导入ES的模块
+- duckula-dump ..................全量导入ES的模块
 - duckula-kafka-consumer ........................消息kafka数据的模块
 - duckula-install ..........................................打包安装模块
 - duckula-ops Tapestry 5 Application .......ops控制台模块

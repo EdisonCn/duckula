@@ -15,7 +15,7 @@ import net.wicp.tams.common.constant.JvmStatus;
 public enum CommandType {
 	task("在线监听任务", "run", "duckula-task.properties", "duckula-task.jar", "docker-run.sh", "t-%s", "nojob",ZkPath.tasks),
 
-	dump("全量导入处理任务", "dump", "duckula-dump-elasticsearch.properties", "duckula-dump-elasticsearch.jar",
+	dump("全量导入处理任务", "dump", "duckula-dump.properties", "duckula-dump.jar",
 			"docker-dump.sh", "d-%s", "now",ZkPath.dumps),
 
 	consumer("kafka监听任务", "consumer", "duckula-kafka-consumer.properties", "duckula-kafka-consumer.jar",

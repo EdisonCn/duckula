@@ -55,7 +55,7 @@
 		</dependency>
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-dump-elasticsearch</artifactId>
+			<artifactId>duckula-dump</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
@@ -93,7 +93,7 @@
 								<param>duckula-serializer-thrift</param>
 							</serializers>
 							<env>
-								dev
+								test
 							</env>
 							<busis>
 								<param>duckula-busi-filter</param>

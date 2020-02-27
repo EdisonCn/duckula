@@ -59,10 +59,10 @@ set "JAVA_DEFAULT_OPT=-server -XX:+HeapDumpOnOutOfMemoryError -XX:+UseConcMarkSw
 set "LOG_ROOT=-DlogRoot=%DUCKULA_DATA%/logs/dump/%1"
 
 set JAVA_OPTS=%JAVA_MEM_OPTS% %JAVA_JMX% %JAVA_DEFAULT_OPT% %LOG_ROOT% %JAVA_DEBUGGER%
-echo  cmdstr="java  %JAVA_OPTS%  -jar %DUCKULA_HOME%/duckula-dump-elasticsearch.jar  %1"
+echo  cmdstr="java  %JAVA_OPTS%  -jar %DUCKULA_HOME%/duckula-dump.jar  %1"
 echo "============================serverice started============================================="
-@rem  start javaw  %JAVA_OPTS%  -jar %DUCKULA_HOME%/duckula-dump-elasticsearch.jar  %1
-java  %JAVA_OPTS%  -jar %DUCKULA_HOME%/duckula-dump-elasticsearch.jar  %1 %startId% %recordNum%
+@rem  start javaw  %JAVA_OPTS%  -jar %DUCKULA_HOME%/duckula-dump.jar  %1
+java  %JAVA_OPTS%  -jar %DUCKULA_HOME%/duckula-dump.jar  %1 %startId% %recordNum%
 echo "========================serverice end======================================"
 
 :end 
