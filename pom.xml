@@ -37,16 +37,16 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<autoconfig.path>${user.home}/antx-config/${devModel}</autoconfig.path>
-		<common.apiext.version>3.6.7</common.apiext.version>
+		<common.apiext.version>3.6.8</common.apiext.version>
 		<common.connector.version>3.6.5</common.connector.version>
 		<common.http.version>3.6.0</common.http.version>
-		<common.metrics.version>3.6.4</common.metrics.version>
+		<common.metrics.version>3.6.8</common.metrics.version>
 		<common.micro.version>4.0.0</common.micro.version>
 		<common.spring.version>3.6.1</common.spring.version>
 		<common.others.version>3.6.7</common.others.version>
 		<common.web.version>3.6.0</common.web.version>
 		<common.grpc.version>3.6.0</common.grpc.version>
-		<common.binlog.version>3.6.0</common.binlog.version>
+		<common.binlog.version>3.6.8</common.binlog.version>
 		<common.binlog.self.version>3.6.0</common.binlog.self.version>
 		<common.tracer.version>3.6.0</common.tracer.version>
 		<common.hadoop.version>3.6.0</common.hadoop.version>
@@ -66,7 +66,7 @@
 		<!-- 与parent不同 -->
 		<log4j.version>2.6.2</log4j.version>
 		<!-- dev版本 -->
-		<duckula.version>2.0.4</duckula.version>
+		<duckula.version>2.0.5</duckula.version>
 		<!-- 与cassandra 3.7.2版本相配 -->
 		<metrics.version>3.2.2</metrics.version>
 	</properties>
@@ -186,6 +186,12 @@
 				<groupId>net.wicp.tams</groupId>
 				<artifactId>duckula-kafka-consumer</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<!-- 支持mysql8 -->
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>5.1.47</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

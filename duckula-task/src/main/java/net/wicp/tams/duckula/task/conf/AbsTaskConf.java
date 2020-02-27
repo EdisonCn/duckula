@@ -21,10 +21,10 @@ public abstract class AbsTaskConf implements ITaskConf {
 	public Pos getMastStatus(Task task) {
 		String url;
 		if (StringUtil.isNull(task.getDefaultDb())) {
-			url = String.format("jdbc:mysql://%s:%s?autoReconnect=true&useUnicode=true&characterEncoding=utf-8",
+			url = String.format("jdbc:mysql://%s:%s?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC",
 					task.getIp(), task.getPort());
 		} else {
-			url = String.format("jdbc:mysql://%s:%s/%s?autoReconnect=true&useUnicode=true&characterEncoding=utf-8",
+			url = String.format("jdbc:mysql://%s:%s/%s?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC",
 					task.getIp(), task.getPort(), task.getDefaultDb());
 		}
 		java.sql.Connection conn = JdbcConnection.getConnection("com.mysql.jdbc.Driver", url, task.getUser(), task.getPwd());

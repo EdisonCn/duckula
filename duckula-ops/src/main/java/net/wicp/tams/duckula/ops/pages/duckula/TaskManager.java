@@ -51,6 +51,7 @@ import net.wicp.tams.component.annotation.HtmlJs;
 import net.wicp.tams.component.constant.EasyUIAdd;
 import net.wicp.tams.component.services.IReq;
 import net.wicp.tams.component.tools.TapestryAssist;
+import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.Dump;
@@ -228,10 +229,10 @@ public class TaskManager {
 
 	public TextStreamResponse onSave() {
 		final Task taskparam = TapestryAssist.getBeanFromPage(Task.class, requestGlobals);
-		boolean isInsert=false;
+		boolean isInsert = false;
 		if (taskparam.getClientId() == 0) {
 			taskparam.setClientId(StringUtil.buildPort(taskparam.getId()));
-			isInsert=true;
+			isInsert = true;
 		}
 		if (StringUtil.isNull(taskparam.getBeginTime())) {
 			taskparam.setBeginTime(DateFormatCase.YYYY_MM_DD_hhmmss.getInstanc().format(new Date()));
@@ -255,10 +256,11 @@ public class TaskManager {
 					.createPathChildrenCache(ZkPath.tasks.getPath(taskparam.getId()), InitDuckula.haWatcherTask);
 			InitDuckula.cacheTaskListener.put(taskparam.getId(), createPathChildrenCache);
 		} else {
-			if(isInsert) {//防止被别人覆盖
+			if (isInsert) {// 防止被别人覆盖
 				return TapestryAssist.getTextStreamResponse(Result.getError("已存在此任务"));
-			}else {
-				ZkClient.getInst().updateNode(ZkPath.tasks.getPath(taskparam.getId()), JSONObject.toJSONString(taskparam));
+			} else {
+				ZkClient.getInst().updateNode(ZkPath.tasks.getPath(taskparam.getId()),
+						JSONObject.toJSONString(taskparam));
 			}
 		}
 
@@ -336,24 +338,25 @@ public class TaskManager {
 		if (!namespaceExists) {
 			return TapestryAssist.getTextStreamResponse(EasyUiAssist.getJsonForGridEmpty());
 		}
-		//List<String> dbs = ZkClient.getInst().getChildren(ZkPath.dbinsts.getRoot());// 所有dbs		
-		List<DbInstance> allDbs = ZkUtil.findAllObjs(ZkPath.dbinsts,DbInstance.class);
-	    if (!TaskPattern.isNeedServer()&& !"all".equals(namespace)) {//
-			CollectionUtils.filter(allDbs, new Predicate() {				
+		// List<String> dbs =
+		// ZkClient.getInst().getChildren(ZkPath.dbinsts.getRoot());// 所有dbs
+		List<DbInstance> allDbs = ZkUtil.findAllObjs(ZkPath.dbinsts, DbInstance.class);
+		if (!TaskPattern.isNeedServer() && !"all".equals(namespace)) {//
+			CollectionUtils.filter(allDbs, new Predicate() {
 				@Override
 				public boolean evaluate(Object object) {
-					DbInstance temp=(DbInstance)object;	
-					if(StringUtil.isNull(temp.getNamespaces())) {
+					DbInstance temp = (DbInstance) object;
+					if (StringUtil.isNull(temp.getNamespaces())) {
 						return false;
 					}
-					if("*".equals(temp.getNamespaces())) {
+					if ("*".equals(temp.getNamespaces())) {
 						return true;
 					}
 					return StrPattern.checkStrFormat(temp.getNamespaces(), namespace);
 				}
 			});
-		}		
-		List<?> ids = CollectionUtil.getColFromObj(allDbs, "id");		
+		}
+		List<?> ids = CollectionUtil.getColFromObj(allDbs, "id");
 		String retstr = JSONUtil.getJsonForListSimple(ids);
 		return TapestryAssist.getTextStreamResponse(retstr);
 	}
@@ -556,6 +559,7 @@ public class TaskManager {
 			JSONObject retobj = new JSONObject();
 			retobj.put("db", rule.getDbPattern());
 			retobj.put("tb", rule.getTbPattern());
+			retobj.put("drds", rule.getDrds());
 			for (RuleItem ruleItem : RuleItem.values()) {
 				if (rule.getItems().containsKey(ruleItem)) {
 					retobj.put(ruleItem.name(), rule.getItems().get(ruleItem));
@@ -593,12 +597,18 @@ public class TaskManager {
 		for (int i = 0; i < rows.size(); i++) {
 			buff.append("&");
 			JSONObject tempObj = rows.getJSONObject(i);
+			String drds = StringUtil.trimSpace(tempObj.getString("drds"));
+			boolean isDrds = StringUtil.isNotNull(drds);
 			String db = tempObj.getString("db").replaceAll("\\^", "").replaceAll("\\$", "").replaceAll("\\[0-9\\]\\*",
-					"");
+					"").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "").replaceAll("_\\[0-9\\]\\{2,\\}", "");   
 			String tb = tempObj.getString("tb").replaceAll("\\^", "").replaceAll("\\$", "").replaceAll("\\[0-9\\]\\*",
-					"");
+					"").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "").replaceAll("_\\[0-9\\]\\{2,\\}", "");
 			buff.append(db + "`");
 			buff.append(tb + "`");
+			if (isDrds) {
+				buff.append(drds + "`");
+				tempObj.remove("drds");
+			}
 			tempObj.remove("db");
 			tempObj.remove("tb");
 			tempObj.remove("isNewRecord");// 这个是easyui对于新增用户自动产生的。

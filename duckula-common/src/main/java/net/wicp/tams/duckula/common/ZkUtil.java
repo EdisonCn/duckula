@@ -40,13 +40,13 @@ public abstract class ZkUtil {
 	public static String[] findPosHis(String taskId) {
 		List<String> children = ZkClient.getInst().getChildren(ZkPath.dbinsts.getPath(taskId));
 		String[] ary = children.toArray(new String[children.size()]);
-		//倒序
+		// 倒序
 		Arrays.sort(ary, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
 				return -o1.compareTo(o2);
 			}
-		});		
+		});
 		return ary;
 	}
 
@@ -98,7 +98,9 @@ public abstract class ZkUtil {
 		}
 		for (String mappingId : mappingNodes) {
 			Mapping temp = ZkUtil.buidlMapping(mappingId);
-			mappings.add(temp);
+			if (temp != null) {
+				mappings.add(temp);
+			}
 		}
 		return mappings;
 	}

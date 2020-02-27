@@ -4,9 +4,12 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import io.thekraken.grok.api.Match;
 import io.thekraken.grok.api.exception.GrokException;
@@ -23,7 +26,7 @@ import net.wicp.tams.common.binlog.parser.event.TableMapLogEvent.ColumnInfo;
 import net.wicp.tams.common.binlog.parser.event.XidLogEvent;
 import net.wicp.tams.common.constant.DateFormatCase;
 import net.wicp.tams.common.constant.OptType;
-import net.wicp.tams.common.constant.StrPattern;
+import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.beans.ColHis;
 import net.wicp.tams.duckula.common.beans.Pos;
 import net.wicp.tams.duckula.plugin.beans.EventTable;
@@ -40,8 +43,6 @@ public abstract class BaseLogFetcher {
 	protected Charset charset = Charset.forName("utf-8");
 	protected GtidBean gtidBean;
 
-
-	
 	private GrokObj gm = GrokObj.getInstance();
 	{
 		gm.addPattern("tb", "[A-Za-z0-9_.-:]+");
@@ -50,15 +51,11 @@ public abstract class BaseLogFetcher {
 		gm.addPattern("db", "[A-Za-z0-9_.-:]+");
 		gm.addPattern("tball2", "alter\\s+table\\s+`?%{db}`.`%{tb}`?");
 	}
-	
 
 	protected BaseLogFetcher(IProducer producer) {
 		this.producer = producer;
 	}
 
-
-	
-	
 	protected void parseQueryEvent(QueryLogEvent event) {
 		String db = event.getDbName();
 		String sql = event.getQuery().toLowerCase();
@@ -89,11 +86,9 @@ public abstract class BaseLogFetcher {
 			}
 		}
 	}
-	
-	
 
 	protected void parseGtidLogEvent(GtidLogEvent event) throws Exception {
-		this.gtidBean=GtidBean.builder().gtids(event.getGtid()).commitTime(event.getWhen()).build();
+		this.gtidBean = GtidBean.builder().gtids(event.getGtid()).commitTime(event.getWhen()).build();
 		parseGtidLogEventSub(event);
 	}
 
@@ -106,18 +101,24 @@ public abstract class BaseLogFetcher {
 	 * 开始读binlog
 	 */
 	public abstract void read();
-	
+
 	protected long xid;// 当前的GTID
 
 	protected void parseXidEvent(XidLogEvent event) throws Exception {
 		EventPackage eventDbsncBuild = producer.getNextBuild();
-		//eventDbsncBuild.setXid(true);
+		// eventDbsncBuild.setXid(true);
 		eventDbsncBuild.setXid(event.getXid());
-		this.xid=event.getXid();
+		this.xid = event.getXid();
 		producer.sendMsg(eventDbsncBuild);// 结束时发一个空的bean表达结束
 	}
 
 	protected boolean parseRowsEvent(RowsLogEvent event, OptType optType) {
+		if (ArrayUtils.contains(ConfUtil.skipdbs, event.getTable().getDbName())
+				|| ArrayUtils.contains(ConfUtil.skiptbs, event.getTable().getTableName())) {// 跳过健康检查事件
+																							// tb:ha_health_check
+																							// 和__drds__systable__leadership__事件
+			return false;
+		}
 		Rule rule = Main.context.findRule(event.getTable().getDbName(), event.getTable().getTableName());
 		if (log.isDebugEnabled()) {
 			Date d = new Date(event.getHeader().getWhen() * 1000);
@@ -138,8 +139,8 @@ public abstract class BaseLogFetcher {
 		pos.setGtids(this.gtidBean.getGtids());
 		pos.setMasterServerId(Main.context.getParsePos().getMasterServerId());
 		pos.setPos(event.getLogPos());
-		//20190612使用提交时间，防止位点的回溯
-		//pos.setTime(event.getHeader().getWhen());
+		// 20190612使用提交时间，防止位点的回溯
+		// pos.setTime(event.getHeader().getWhen());
 		pos.setTime(this.gtidBean.getCommitTime());
 		eventDbsncBuild.setPos(pos);
 		// 组装公共信息
