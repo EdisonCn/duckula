@@ -327,16 +327,29 @@
 
       
      function changeSender(val){
+     	// 选择中间件类型
+		 // 什么也不选
         if("no"===val){
            $('td[name="othersender"]').css({"visibility":"visible"});
            $('#middlewareType_save').combobox('setValue','');
-        }else if("kafkaIde"===val){
+        }
+        // 幂等
+        else if("kafkaIde"===val){
            $('td[name="othersender"]').css({"visibility":"hidden"});
            $('#middlewareType_save').combobox('setValue','kafka'); 
-        }else{
+        }
+        // 增加es7.x
+		else if("es_v7"===val){
+			$('td[name="othersender"]').css({"visibility":"hidden"});
+			$('#middlewareType_save').combobox('setValue','es');
+		}
+        // 其它
+        else{
            $('td[name="othersender"]').css({"visibility":"hidden"});
            $('#middlewareType_save').combobox('setValue',val);
         }
+
+        // 选择序列化插件
         if(or('kafka'==val,'redis'==val)){
           $('td[name="serializerEnum"]').css({"visibility":"visible"});
         }else if('kafkaIde'==val){//暂时只配置为kafkaIde
@@ -346,6 +359,8 @@
           $('td[name="serializerEnum"]').css({"visibility":"hidden"});
           $('#serializerEnum_save').combobox('setValue','no');
         }
+
+        // 选择规则
         if('kafka'==val||"kafkaIde"===val){
            showRuleColumn(["topic","splitkey"]);
         }else if('es'==val){

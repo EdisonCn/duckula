@@ -45,5 +45,5 @@ LOG_ROOT="-DlogRoot=$DUCKULA_DATA/logs/dump/$1"
 JAVA_OPTS="${JAVA_MEM_OPTS} ${JAVA_JMX} ${JAVA_DEFAULT_OPT} ${LOG_ROOT} ${JAVA_DEBUGGER}" 
 echo  ${JAVA_OPTS}
 echo "============================serverice started============================================="
-nohup java  ${JAVA_OPTS}  -jar $DUCKULA_HOME/duckula-dump-elasticsearch.jar  $1 ${startId} ${recordNum} >/dev/null 2>&1 &
+nohup java  ${JAVA_OPTS}  -jar $DUCKULA_HOME/duckula-dump.jar  $1 ${startId} ${recordNum} >/dev/null 2>&1 &
 echo "========================serverice end======================================"
