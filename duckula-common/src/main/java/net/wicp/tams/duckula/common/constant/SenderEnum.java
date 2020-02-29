@@ -11,7 +11,7 @@ public enum SenderEnum implements IEnumCombobox {
 
 	es("es搜索(v<7)", "/sender/duckula-plugin-elasticsearch/", MiddlewareType.es,false),
 
-	es_v7("es搜索(v=7.x)", "/sender/duckula-plugin-es-v7/", MiddlewareType.es,false),
+	es_v7("es搜索(v=7.x)", "/sender/duckula-plugin-es7/", MiddlewareType.es,false),
 
 	redis("redis缓存", "/sender/duckula-plugin-redis/", MiddlewareType.redis,false),
 	

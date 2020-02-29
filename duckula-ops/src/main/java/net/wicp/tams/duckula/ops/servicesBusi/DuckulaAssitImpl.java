@@ -403,7 +403,7 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 			break;
 		case dump:
 			Dump buidlDump = ZkUtil.buidlDump(taskId);
-			buidlTask = ZkUtil.buidlTask(buidlDump.getTaskOnlineId());
+			//buidlTask = ZkUtil.buidlTask(buidlDump.getTaskOnlineId());
 			break;
 		default:
 			break;
@@ -545,7 +545,7 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		}
 		if (commandType == CommandType.dump) {
 			Dump buidlDump = ZkUtil.buidlDump(taskId);
-			Map<String, String[]> hostMap = MiddlewareType.es.getHostMap(buidlDump.getCluster());
+			Map<String, String[]> hostMap =   buidlDump.getMiddlewareType().getHostMap(buidlDump.getMiddlewareInst());
 			hosts.putAll(hostMap);
 		}
 		if (MapUtils.isNotEmpty(hosts)) {

@@ -370,13 +370,6 @@ public class TaskManager {
 		}
 		// 删除节点监听
 		Result ret = ZkUtil.del(ZkPath.tasks, taskparam.getId());
-		// 删除关联的dump任务
-		List<Dump> findAllDump = ZkUtil.findAllDump();
-		for (Dump dump : findAllDump) {
-			if (taskparam.getId().equals(dump.getTaskOnlineId())) {
-				ZkUtil.del(ZkPath.dumps, dump.getId());
-			}
-		}
 		// 删除关联的离线任务
 		List<TaskOffline> allOffline = ZkUtil.findAllObjs(ZkPath.tasksofflines, TaskOffline.class);
 		for (TaskOffline taskOffline : allOffline) {

@@ -3,16 +3,16 @@
       xmlns:s="tapestry-library:tams"
       xmlns:p="tapestry:parameter"> 
 <head>
-   <title isMenu="true" module="3">ES索引管理</title>
+   <title isMenu="true" module="3">数据导入管理</title>
 </head>
 <body>
    <r:query id="q"  qBlock="query" queryUrl="/es/importManager:query" uBlock="save"   saveUrl="/es/importManager:save" deleteUrl="/es/importManager:del" opFormatter="showopt" 
-        columns="[[{field:'id',width:350,title:'id'},{field:'taskOnlineId',width:200,title:'在线任务'},{field:'mappingId',width:200,title:'索引-类型'},{field:'db_tb',width:150,title:'库名.表名'},{field:'busiPlugin',width:150,title:'业务插件'},{field:'wheresql',width:300,title:'where语句'},${ColDifferent},{field:'op',width:350,title:'操作'}]]" 
-        dialogStyle="width:800px;height:600px;" initAddHandle="initAdd" saveCheckHandle="saveCheck" pagination="false"/>
+        columns="[[{field:'id',width:350,title:'id'},{field:'busiPlugin',width:150,title:'业务插件'},${ColDifferent},{field:'op',width:350,title:'操作'}]]" 
+        dialogStyle="width:800px;height:600px;" initAddHandle="initAdd" initSaveHandle="initUpdate" saveCheckHandle="saveCheck" pagination="false"/>
    <t:block id="query">
        <table class="frame_table_list_4">
 		 <tr>
-			    <td class="frame_table_list_4_righttext">在线任务</td>
+			    <td class="frame_table_list_4_righttext">数据库实例</td>
 				<td>
 				   <r:validatebox name="taskOnlineId"/>
 				</td>				
@@ -39,42 +39,49 @@
 			         </td>
 			      </tr>
 			      <tr>
-			         <td class="frame_table_list_2_righttext">在线任务</td>
+			         <td class="frame_table_list_2_righttext">id</td>
 			         <td>
-			             <r:combogrid id="taskSel" name="taskOnlineId"  columns="[[{field:'id',width:110,title:'id'},{field:'ip',width:280,title:'ip'},{field:'senderEnum',width:60,title:'发送者'}]]" idfield="id" panelWidth="460" panelHeight="300" textfield="id" width="200" pagination="false" url="/duckula/binlogDownload:queryTasks?namespace=${namespace}"></r:combogrid>
-			             <input type="hidden" name="id"/>
+			              <r:validatebox  id="update_importId"  name="id" style="width:180px;" required="true"/>
 	                 </td>
-			 	  	  <td class="frame_table_list_2_righttext" name="trdb">业务插件</td>	                 
-	                 <td>
-			             <r:combogrid id="busiPluginSel" name="busiPlugin"  columns="[[{field:'id',width:100,title:'id'},{field:'projectName',width:250,title:'项目名称'},{field:'update',width:100,title:'上传人'},{field:'lastUpdateTime',width:150,title:'上传时间'},{field:'pluginFileName',width:250,title:'插件文件名'},{field:'fileExit',width:100,title:'ops存在'},{field:'fileExitServer',width:100,title:'同步状态'}]]" idfield="pluginFileName" panelWidth="1100" panelHeight="300" textfield="pluginFileName" width="200" pagination="false" url="/es/busiPluginManager:query"></r:combogrid>
+			         <td class="frame_table_list_2_righttext">数据库实例</td>
+			         <td>
+			             <r:combobox id="dbinst_inst" name="dbinst" url="/duckula/taskManager:queryInst" changeHandle="changeDbInst" width="150"></r:combobox>
 	                 </td>
 			      </tr>
+			      
 			       <tr>
-			         <td class="frame_table_list_2_righttext">需要发送</td>
-			         <td colspan="3">
-			              <r:comboboxenum id="needSend_save"  name="needSend" enumClass="net.wicp.tams.common.constant.dic.YesOrNo" required="false"></r:comboboxenum> 用于自定义插件，如果自定义的插件自己处理发送等事件，此处设置“否”
-	                 </td>
+			         <td class="frame_table_list_2_righttext">image版本</td>
+			         <td>
+			            <r:validatebox id="imageVersion_save" name="imageVersion" style="width:250px;" required="false"/>
+	               </td>
+			 	  	 <td class="frame_table_list_2_righttext">名称空间</td>
+			 	     <td>
+			 	        <r:validatebox id="namespace_save" name="namespace" style="width:250px;" required="false"  readonly="true"/>
+			 	     </td>
 			      </tr>
+			    
+			   
 			      <tr>
-			         <td class="frame_table_list_2_righttext">es集群</td>
+			         <td class="frame_table_list_2_righttext" name="trdb">业务插件</td>
 			         <td>
-			            <r:combobox id="cluster_save" name="cluster" url="/es/indexManager:queryMiddlewareType/es"  width="80" required="true"></r:combobox> 
+			             <r:combogrid id="busiPluginSel" name="busiPlugin"  columns="[[{field:'id',width:100,title:'id'},{field:'projectName',width:250,title:'项目名称'},{field:'update',width:100,title:'上传人'},{field:'lastUpdateTime',width:150,title:'上传时间'},{field:'pluginFileName',width:250,title:'插件文件名'},{field:'fileExit',width:100,title:'ops存在'},{field:'fileExitServer',width:100,title:'同步状态'}]]" idfield="pluginFileName" panelWidth="1100" panelHeight="300" textfield="pluginFileName" width="180" pagination="false" url="/es/busiPluginManager:query"></r:combogrid>
 	                 </td>
-			 	  	 <td class="frame_table_list_2_righttext">es索引</td>
+	                 <td class="frame_table_list_2_righttext" name="trdb">发送者</td>
 			         <td>
-			             <r:combobox id="mappingId_save" name="mappingId" url="/es/indexManager:queryIndex"  width="80" required="true" textField="index" valueField="id" parent="cluster_save"></r:combobox> 
+			             <r:comboboxenum id="senderConsumerEnum_save"  name="senderConsumerEnum" enumClass="net.wicp.tams.duckula.common.beans.SenderConsumerEnum" required="true" changeHandle="changeSender" include="es,jdbc,no"></r:comboboxenum>
 			         </td>
 			      </tr>
+			      
 			      <tr>
-			         <td class="frame_table_list_2_righttext" name="trdb">库名.表名</td>
-			         <td name="trdb">
-			             <r:validatebox name="db_tb" style="width:280px;" required="true"/>
-	                 </td>
-			         <td class="frame_table_list_2_righttext">where语句</td>
+			         <td class="frame_table_list_2_righttext">中间件类型</td>
 			         <td>
-			            <r:validatebox name="wheresql" style="width:280px;" required="false"/>
-	                 </td>
-			      </tr>			      
+			            <r:comboboxenum id="middlewareType_save"  name="middlewareType" enumClass="net.wicp.tams.duckula.common.constant.MiddlewareType" required="false" readonly="true"></r:comboboxenum>
+	               </td>
+			 	  	 <td class="frame_table_list_2_righttext">中间件实例</td>
+			 	     <td>
+			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareType" parent="middlewareType_save" required="false"></r:combobox>
+			 	     </td>
+			      </tr>		      
 			      <tr>
 			         <td class="frame_table_list_2_righttext" name="trdb">每段数量</td>
 			         <td name="trdb">
@@ -105,8 +112,42 @@
 			            <r:numberbox  name="memory" style="width:60px;" min="4096" max="16384" missingMessage="1024Mi为1G" required="true"/> Mi
 	                 </td>
 			      </tr>
-			      <tr>
-			        
+			      <tr name="showmodel">
+			        <td colspan="4">
+				        <table id="dg" title="规则编辑" style="width:98%;height:160px"
+					            toolbar="#toolbar" pagination="false" idField="id"
+					            rownumbers="false" fitColumns="true" singleSelect="true">
+					        <thead>
+					            <tr>
+					                <th field="db" width="15%" editor="{type:'validatebox',options:{required:true}}">库名模式</th>
+					                <th field="tb" width="30%" editor="{type:'validatebox',options:{required:true}}">表名模式</th>
+					                <th field="topic" width="20%" editor="{type:'validatebox',options:{required:false}}">消息主题</th>
+					                <th field="key" width="15%" editor="{type:'validatebox',options:{required:false}}">主键</th>
+					                <th field="relakey" width="12%" editor="{type:'validatebox',options:{required:false}}">关联字段</th>
+					                <th field="index" width="12%" editor="{type:'validatebox',options:{required:false}}">es索引</th>
+					                <th field="splitkey" width="12%" editor="{type:'validatebox',options:{required:false}}">分隔字段</th>
+					                
+					                <th field="redisurl" width="12%" editor="{type:'validatebox',options:{required:false}}">缓存地址</th>
+					                 <th field="appid" width="12%" editor="{type:'validatebox',options:{required:false}}">appid</th>
+					                <th field="type" width="12%" editor="{type:'validatebox',options:{required:false}}">索引类型</th>
+					                <th field="middleware" width="12%" editor="{type:'validatebox',options:{required:false}}">中间件集群</th>
+					                <th field="dbinstanceid" width="12%" editor="{type:'validatebox',options:{required:false}}">中间件实例</th>
+					                <th field="dbtb" width="22%" editor="{type:'validatebox',options:{required:false}}">库名表名(格式：db.tb)</th>
+					                <th field="ks" width="12%" editor="{type:'validatebox',options:{required:false}}">名称空间</th>
+					                <th field="table" width="12%" editor="{type:'validatebox',options:{required:false}}">表名</th>			               
+					                <th field="other" width="12%" editor="{type:'validatebox',options:{required:false}}">其它配置</th>
+					            </tr>
+					        </thead>
+					    </table>
+					     <div id="toolbar">
+					        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow')">新增规则</a>
+					        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:$('#dg').edatagrid('destroyRow')">删除</a>
+					        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">取消</a>
+					        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')">保存</a>	
+					        <font color="red" style="font-weight:bold;"> &emsp;&msp;&emsp;&emsp;&emsp;     请选择接收者，编辑完成后请“保存”,配置以输入框内容为准，界面只是辅助输入	</font>			        
+					        <r:validatebox id="rulesEdit"  name="rules" style="width:735px;" required="true"/>
+					    </div>
+			        </td>
 			      </tr>			      
 			       <tr>
 			         <td class="frame_table_list_2_righttext">备注</td>
@@ -123,8 +164,7 @@
      function showopt(value,row,index){
             var optCan=gt( row.hostNum,0);
             var k8sCan=!(""==row.podStatus);//Pending
-            var lastCan= needServer?optCan:k8sCan;
-                        
+            var lastCan= needServer?optCan:k8sCan;                        
        	    var update= '<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit"  data-options="disabled:'+lastCan+'"  style="margin-right:10px" onclick="_doUpdate('+index+') ">'+msg.update+'</a>';
        	    var deletebut= '<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" data-options="disabled:'+lastCan+'" style="margin-right:10px" onclick="_doDelete('+index+') ">'+msg.delete_+'</a>';
        	    var serverbut='<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-role" style="margin-right:10px" onclick="doServer(\''+index+'\') ">分派服务器</a>'; 
@@ -205,12 +245,118 @@
      	 var rows = jQuery('#q_grid').datagrid('getRows');
      	 return rows[index];
      }        
+     
+     
      function initAdd(){
-         $('#needSend_save').combobox('setValue','yes');
+        $('#dg').edatagrid("loadData", []);
+        $('#imageVersion_save').val('${defaultImageVersion}');
+        $('#namespace_save').val('${defaultNamespace}');
      }
+     
+    function initUpdate(){
+       $('#namespace_save').val('${defaultNamespace}');
+       syncRule();
+    }
+     
+     function changeDbInst(val){
+     }
+     
+     
+     var allcolumn=["topic","key","relakey","appid","redisurl","splitkey","index","type","middleware","dbinstanceid","dbtb","ks","table","other"];
+     function showRuleColumn(showcolumns){
+        for (var item of allcolumn) {
+           $('#dg').edatagrid("hideColumn", item);
+		   //$('#dg').edatagrid("showColumn", item);
+		}
+		
+		for (var item of showcolumns) {
+		   $('#dg').edatagrid("showColumn", item);
+		}
+	 }     
+	 function changeSender(val){      
+        if('es'==val){
+            $('#middlewareType_save').combobox('setValue','es');
+            //$('#middlewareInst_save').validatebox('required','true');           
+            showRuleColumn(["index","key","relakey"]);
+        }else if('jdbc'==val){
+            $('#middlewareType_save').combobox('setValue','');
+           // $('#middlewareInst_save').validatebox('required','false');
+            showRuleColumn(["key","dbinstanceid","dbtb"]);
+        }else if('kafka'==val){
+            $('#middlewareType_save').combobox('setValue','kafka');
+           // $('#middlewareInst_save').validatebox('required','false');
+            showRuleColumn(["key","topic"]);
+        }else if('no'==val){
+            $('#middlewareType_save').combobox('setValue','');
+           // $('#middlewareInst_save').validatebox('required','false');
+            showRuleColumn([]);
+        }
+     }     
+    function syncRule(){
+	   var rules= $('#rulesEdit').val();
+          $.post($.rjzjh.packurl('/duckula/taskManager:ruleData'),{'ruleData':rules},function(data){
+	         //alert(data);//更新edatagrid
+	         $('#dg').edatagrid("loadData", data);
+	      },'json');
+	 }
+	function  updateRuleInput(index,data,changes){
+      			 var sendClassSel=  $('#senderConsumerEnum_save').combobox('getValue');
+				   if(sendClassSel==""){
+				      $.rjzjh.alert("请选择接收者!");
+				      return false;
+				   }
+				   //数据检查
+				   var dgdata= $('#dg').edatagrid('getData');
+				   for (var row of dgdata.rows) {
+					  if(sendClassSel=='es'){
+			               if(row.index==''||row.key==''){
+				               $.rjzjh.alert('es发送类型需要设置索引、主键');
+				               return false;
+				           }
+			           }else if(sendClassSel=='redis'){
+			               if(row.key==''||lt(row.key.indexOf('%s'),0)){
+				               $.rjzjh.alert('redis发送类型需要设置主键且含有"%s"');
+				               return false;
+				           }
+			           }			           
+				   }
+                   //提交后端进行格式化
+				   //onSave有时会不起作用，故用onBeforeSave
+				   var datastr=JSON.stringify(dgdata);	
+				   $.post($.rjzjh.packurl('/duckula/taskManager:dataConvert'),{'saveData':datastr},function(data){
+					  $.rjzjh.opt2(data,function(){
+					    if("操作成功"==data.msg){
+					       jQuery('#rulesEdit').val("");
+					    }else{
+					      jQuery('#rulesEdit').val(data.msg);
+					    }
+			          });
+			       },'json');		   
+	 }
          
   $(function(){      
-         
+     $('#rulesEdit').blur(function(){
+          syncRule();
+      });     
+     $('#dg').edatagrid({
+			    data: [
+					{db:'value11', tb:'value12'},
+					{db:'value21', tb:'value22'}
+				],
+				destroyMsg: {
+					norecord:{	// when no record is selected
+						title:'警告',
+						msg:'没有选择记录.'
+					},
+					confirm:{	// when select a row
+						title:'确认',
+						msg:'您确定要删除此监听规则吗?'
+					}
+				},
+				autoSave: false,
+				onDestroy: updateRuleInput,
+				onAfterEdit: updateRuleInput
+      });   
    });    
    
 </script>
