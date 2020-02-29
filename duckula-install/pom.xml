@@ -62,6 +62,12 @@
 			<artifactId>duckula-kafka-consumer</artifactId>
 		</dependency>
 
+		<!-- 新增es7接受者插件 -->
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-plugin-es-v7</artifactId>
+		</dependency>
+
 
 
 	</dependencies>
@@ -84,6 +90,7 @@
 								<param>duckula-plugin-kafka</param>
 								<param>duckula-plugin-kafka-idempotent</param>
 								<param>duckula-plugin-elasticsearch</param>
+								<param>duckula-plugin-es-v7</param>
 								<param>duckula-plugin-cassandra</param>
 							</plugs>
 							<serializers>
