@@ -26,7 +26,7 @@
 		<module>duckula-kafka-consumer</module>
 
 		<module>duckula-plugin-kafka-idempotent</module>
-
+        <module>duckula-plugin-es-v7</module>
 		<module>duckula-plugin-cassandra</module>
 	</modules>
 	<parent>
@@ -170,6 +170,11 @@
 			<dependency>
 				<groupId>net.wicp.tams</groupId>
 				<artifactId>duckula-plugin-elasticsearch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.wicp.tams</groupId>
+				<artifactId>duckula-plugin-es7</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
