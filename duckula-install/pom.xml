@@ -70,6 +70,11 @@
 
 
 
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-dump-es6</artifactId>
+			<version>2.0.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>duckula-install</finalName>
@@ -103,7 +108,7 @@
 							    <param>duckula-dump-es6</param>
 							</dumpSenders>
 							<consumerSenders>
-							    
+							    <param>duckula-consumersender-es6</param>							
 							</consumerSenders>
 							<env>
 								test

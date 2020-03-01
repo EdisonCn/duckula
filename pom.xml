@@ -30,7 +30,8 @@
 		<module>duckula-plugin-cassandra</module>
 		<module>duckula-dump-es6</module>
 		<module>duckula-dump-es7</module>
-	</modules>
+		<module>duckula-consumersender-es6</module>
+</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
 		<artifactId>parent</artifactId>
