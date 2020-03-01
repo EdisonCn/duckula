@@ -60,6 +60,10 @@
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-dev-plugin-consumer</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>common-binlog-alone</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -1,30 +1,38 @@
 package net.wicp.tams.duckula.dump;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.ArrayUtils;
+
+import com.alibaba.fastjson.JSONObject;
 
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.common.apiext.OSinfo;
 import net.wicp.tams.common.apiext.StringUtil;
+import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
 import net.wicp.tams.common.binlog.dump.MainDump;
 import net.wicp.tams.common.constant.DateFormatCase;
-import net.wicp.tams.common.constant.dic.YesOrNo;
+import net.wicp.tams.common.jdbc.DruidAssit;
 import net.wicp.tams.common.metrics.utility.TsLogger;
 import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
+import net.wicp.tams.duckula.common.beans.DbInstance;
 import net.wicp.tams.duckula.common.beans.Dump;
-import net.wicp.tams.duckula.common.beans.Task;
 import net.wicp.tams.duckula.common.constant.CommandType;
-import net.wicp.tams.duckula.common.constant.MiddlewareType;
+import net.wicp.tams.duckula.common.constant.DumpEnum;
 import net.wicp.tams.duckula.common.constant.ZkPath;
+import net.wicp.tams.duckula.plugin.beans.Rule;
 
 @Slf4j
 public class DumpMain {
@@ -41,9 +49,10 @@ public class DumpMain {
 		CommandType.dump.setCommonProps();
 		// 加载目的地中间件
 		Dump dump = ZkUtil.buidlDump(dumpId);
-		Properties configMiddleware = ConfUtil.configMiddleware(MiddlewareType.es, dump.getCluster());// TODO
-																										// 满足不同的存储中间件，并不只是ES
-		Conf.overProp(configMiddleware);
+		if (dump.getMiddlewareType() != null) {
+			Properties configMiddleware = ConfUtil.configMiddleware(dump.getMiddlewareType(), dump.getMiddlewareInst());
+			Conf.overProp(configMiddleware);
+		}
 
 		log.info("----------------------创建zk临时文件-------------------------------------");
 		String curtimestr = DateFormatCase.yyyyMMddHHmmss.getInstanc().format(new Date());
@@ -60,26 +69,44 @@ public class DumpMain {
 		System.setProperty(TsLogger.ENV_FILE_NAME, "dump_" + dumpId);
 		System.setProperty(TsLogger.ENV_FILE_ROOT, String.format("%s/logs/metrics", System.getenv("DUCKULA_DATA")));
 		log.info("----------------------导入配置-------------------------------------");
-		Task task = ZkUtil.buidlTask(dump.getTaskOnlineId());
 		Properties props = new Properties();
-		props.put("common.jdbc.datasource.default.host", task.getIp());
-		if (StringUtil.isNotNull(task.getDefaultDb())) {
-			props.put("common.jdbc.datasource.default.defaultdb", task.getDefaultDb());
-		} else {
-			props.put("common.jdbc.datasource.default.defaultdb", "null");
+		props.put("common.binlog.alone.dump.global.enable", "true");//
+		DbInstance dbInstance = ZkClient.getInst().getDateObj(ZkPath.dbinsts.getPath(dump.getDbinst()),
+				DbInstance.class);
+		props.put("common.binlog.alone.dump.global.pool.host", dbInstance.getUrl());
+		props.put("common.binlog.alone.dump.global.pool.port", String.valueOf(dbInstance.getPort()));
+		props.put("common.binlog.alone.dump.global.pool.username", dbInstance.getUser());
+		props.put("common.binlog.alone.dump.global.pool.password", dbInstance.getPwd());
+		DumpEnum dumpEnum = dump.getDumpEnum();
+		if (dumpEnum != null && StringUtil.isNotNull(dumpEnum.getPluginJar())) {//插件处理
+			File rootDir = new File(System.getenv("DUCKULA_DATA"));
+			String pluginDri = IOUtil.mergeFolderAndFilePath(rootDir.getPath(), dumpEnum.getPluginJar());
+			props.put("common.binlog.alone.dump.global.busiPluginDir", pluginDri);
 		}
-		if (task.getIsSsh() != null && task.getIsSsh() == YesOrNo.yes) {
-			props.put("common.jdbc.ssh.enable", "true");
-		} else {
-			props.put("common.jdbc.ssh.enable", "false");
-		}
-		props.put("common.jdbc.datasource.default.port", String.valueOf(task.getPort()));
-		props.put("common.jdbc.datasource.default.username", task.getUser());
-		props.put("common.jdbc.datasource.default.password", task.getPwd());
 		Conf.overProp(props);
-
+		log.info("----------------------处理原文件配置-------------------------------------");
+		Properties newprops = Conf.replacePre("common.binlog.alone.dump.global.pool",
+				"common.jdbc.datasource." + MainDump.globleDatasourceName);
+		Conf.overProp(newprops);
+		Connection conn = DruidAssit.getConnection(MainDump.globleDatasourceName);
+		Properties dumpProps = new Properties();
+		List<String> dumpIds=new ArrayList<String>();
+		for (Rule rule : dump.getRuleList()) {
+			List<String[]> allTables = MySqlAssit.getAllTables(conn, rule.getDbPattern(), rule.getTbPattern());
+			// rule.getItems().get(RuleItem.index);
+			for (String[] dbtb : allTables) {
+				String dumpIdTemp=dbtb[0]+"-"+dbtb[1];
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%.db", dumpIdTemp), dbtb[0]);
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%.tb", dumpIdTemp), dbtb[1]);
+				dumpIds.add(dumpIdTemp);
+			}
+		}
+		Conf.overProp(dumpProps);
+		log.info("----------------------插件处理配置-------------------------------------");
+		JSONObject params=new JSONObject();		
+		params.put("dumpId", dump.getId());
 		MainDump main = new MainDump();
-		main.dump();
+		main.dump(params);
 		System.in.read();
 	}
 }

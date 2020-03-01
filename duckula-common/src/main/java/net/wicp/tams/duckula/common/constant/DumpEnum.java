@@ -1,0 +1,62 @@
+package net.wicp.tams.duckula.common.constant;
+
+import net.wicp.tams.common.constant.dic.intf.IEnumCombobox;
+
+public enum DumpEnum implements IEnumCombobox {
+
+	es_v6("es搜索(v<7)", "/dump/duckula-dump-es6/", MiddlewareType.es),
+
+	es_v7("es搜索(v=7.x)", "/dump/duckula-dump-es7/", MiddlewareType.es),
+
+	mysql("redis缓存", "", null),
+
+	no("其它发送者", "", null);
+
+	private final String desc;
+	private final String pluginJar;// 值
+	private final MiddlewareType middlewareType;// 关联的中间件类型
+
+	public String getPluginJar() {
+		// String pathStr = IOUtil.mergeFolderAndFilePath(rootDir.getPath(),
+		// this.pluginJar);
+		return pluginJar;
+	}
+
+	private DumpEnum(String desc, String pluginJar, MiddlewareType middlewareType) {
+		this.desc = desc;
+		this.pluginJar = pluginJar;
+		this.middlewareType = middlewareType;
+	}
+
+	public static DumpEnum get(String name) {
+		for (DumpEnum senderEnum : DumpEnum.values()) {
+			if (senderEnum.name().equalsIgnoreCase(name)) {
+				return senderEnum;
+			}
+		}
+		return null;
+	}
+
+	public String getDesc() {
+		return desc;
+	}
+
+	@Override
+	public String getName() {
+		return this.name();
+	}
+
+	@Override
+	public String getDesc_en() {
+		return this.desc;
+	}
+
+	@Override
+	public String getDesc_zh() {
+		return this.desc;
+	}
+
+	public MiddlewareType getMiddlewareType() {
+		return middlewareType;
+	}
+}

@@ -28,6 +28,8 @@
 		<module>duckula-plugin-kafka-idempotent</module>
         <module>duckula-plugin-es7</module>
 		<module>duckula-plugin-cassandra</module>
+		<module>duckula-dump-es6</module>
+		<module>duckula-dump-es7</module>
 	</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
@@ -37,7 +39,7 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<autoconfig.path>${user.home}/antx-config/${devModel}</autoconfig.path>
-		<common.apiext.version>3.6.9</common.apiext.version>
+		<common.apiext.version>3.6.10</common.apiext.version>
 		<common.connector.version>3.6.5</common.connector.version>
 		<common.http.version>3.6.0</common.http.version>
 		<common.metrics.version>3.6.8</common.metrics.version>
@@ -57,7 +59,7 @@
 		<common.es.client.version>3.6.6</common.es.client.version>
 		<common.kubernetes.version>3.6.7</common.kubernetes.version>
 		<common.cassandra.version>3.6.7</common.cassandra.version>
-		<common.binlog.alone.version>3.6.6</common.binlog.alone.version>
+		<common.binlog.alone.version>3.6.10</common.binlog.alone.version>
 		<common.flink.source.binlog.version>3.6.6</common.flink.source.binlog.version>
 		<common.flink.sink.influxdb.version>3.6.6</common.flink.sink.influxdb.version>
 		<common.spring.autoconfig.version>3.6.5</common.spring.autoconfig.version>
