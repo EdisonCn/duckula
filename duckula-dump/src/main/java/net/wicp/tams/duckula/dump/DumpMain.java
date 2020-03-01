@@ -78,7 +78,7 @@ public class DumpMain {
 		props.put("common.binlog.alone.dump.global.pool.username", dbInstance.getUser());
 		props.put("common.binlog.alone.dump.global.pool.password", dbInstance.getPwd());
 		DumpEnum dumpEnum = dump.getDumpEnum();
-		if (dumpEnum != null && StringUtil.isNotNull(dumpEnum.getPluginJar())) {//插件处理
+		if (dumpEnum != null && StringUtil.isNotNull(dumpEnum.getPluginJar())) {// 插件处理
 			File rootDir = new File(System.getenv("DUCKULA_DATA"));
 			String pluginDri = IOUtil.mergeFolderAndFilePath(rootDir.getPath(), dumpEnum.getPluginJar());
 			props.put("common.binlog.alone.dump.global.busiPluginDir", pluginDri);
@@ -90,21 +90,32 @@ public class DumpMain {
 		Conf.overProp(newprops);
 		Connection conn = DruidAssit.getConnection(MainDump.globleDatasourceName);
 		Properties dumpProps = new Properties();
-		List<String> dumpIds=new ArrayList<String>();
+		List<String> dumpIds = new ArrayList<String>();
 		for (Rule rule : dump.getRuleList()) {
 			List<String[]> allTables = MySqlAssit.getAllTables(conn, rule.getDbPattern(), rule.getTbPattern());
 			// rule.getItems().get(RuleItem.index);
 			for (String[] dbtb : allTables) {
-				String dumpIdTemp=dbtb[0]+"-"+dbtb[1];
-				dumpProps.put(String.format("common.binlog.alone.dump.ori.%.db", dumpIdTemp), dbtb[0]);
-				dumpProps.put(String.format("common.binlog.alone.dump.ori.%.tb", dumpIdTemp), dbtb[1]);
+				String dumpIdTemp = dbtb[0] + "-" + dbtb[1];
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.db", dumpIdTemp), dbtb[0]);
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tb", dumpIdTemp), dbtb[1]);
 				dumpIds.add(dumpIdTemp);
 			}
 		}
-		Conf.overProp(dumpProps);
 		log.info("----------------------插件处理配置-------------------------------------");
-		JSONObject params=new JSONObject();		
-		params.put("dumpId", dump.getId());
+		if (StringUtil.isNotNull(dump.getDumpEnum().getPluginJar())) {// 有插件
+			String pluginDir = IOUtil.mergeFolderAndFilePath(ConfUtil.getDatadir(false),
+					dump.getDumpEnum().getPluginJar());
+			dumpProps.put("common.binlog.alone.dump.global.busiPluginDir", pluginDir);
+		}
+
+		if (StringUtil.isNotNull(dump.getDumpEnum().getPluginClassName())) {// mysql是内置的
+			dumpProps.put("common.binlog.alone.dump.global.ori.busiSender", dump.getDumpEnum().getPluginClassName());
+		}
+		Conf.overProp(dumpProps);
+		JSONObject params = new JSONObject();
+		params.put("middlewareType", dump.getMiddlewareType() != null ? dump.getMiddlewareType().name() : "");
+		params.put("middlewareInst", dump.getMiddlewareType() != null ? dump.getMiddlewareInst() : "");
+		params.put("rules", dump.getRules());
 		MainDump main = new MainDump();
 		main.dump(params);
 		System.in.read();

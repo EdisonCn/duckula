@@ -4,16 +4,18 @@ import net.wicp.tams.common.constant.dic.intf.IEnumCombobox;
 
 public enum DumpEnum implements IEnumCombobox {
 
-	es_v6("es搜索(v<7)", "/dump/duckula-dump-es6/", MiddlewareType.es),
+	es_v6("es搜索(v<7)", "/dumpsender/duckula-dump-es6/", "net.wicp.tams.duckula.dump.es6.SenderEs", MiddlewareType.es),
 
-	es_v7("es搜索(v=7.x)", "/dump/duckula-dump-es7/", MiddlewareType.es),
+	es_v7("es搜索(v=7.x)", "/dumpsender/duckula-dump-es7/", "net.wicp.tams.duckula.dump.es7.SenderEs", MiddlewareType.es),
 
-	mysql("redis缓存", "", null),
+	mysql("mysql发送者", "", "mysql", null),
 
-	no("其它发送者", "", null);
+	no("其它发送者", "", "", null);
 
 	private final String desc;
 	private final String pluginJar;// 值
+	private final String pluginClassName;// 值
+
 	private final MiddlewareType middlewareType;// 关联的中间件类型
 
 	public String getPluginJar() {
@@ -22,9 +24,10 @@ public enum DumpEnum implements IEnumCombobox {
 		return pluginJar;
 	}
 
-	private DumpEnum(String desc, String pluginJar, MiddlewareType middlewareType) {
+	private DumpEnum(String desc, String pluginJar, String pluginClassName, MiddlewareType middlewareType) {
 		this.desc = desc;
 		this.pluginJar = pluginJar;
+		this.pluginClassName = pluginClassName;
 		this.middlewareType = middlewareType;
 	}
 
@@ -58,5 +61,9 @@ public enum DumpEnum implements IEnumCombobox {
 
 	public MiddlewareType getMiddlewareType() {
 		return middlewareType;
+	}
+
+	public String getPluginClassName() {
+		return pluginClassName;
 	}
 }
