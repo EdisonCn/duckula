@@ -1,4 +1,4 @@
-package net.wicp.tams.duckula.consumersender.es6;
+package net.wicp.tams.duckula.consumersender.es7;
 
 import com.alibaba.fastjson.JSONObject;
 import net.wicp.tams.common.Conf;

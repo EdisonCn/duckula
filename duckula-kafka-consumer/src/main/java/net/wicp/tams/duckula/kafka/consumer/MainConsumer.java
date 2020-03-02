@@ -113,7 +113,7 @@ public class MainConsumer {
 
         // 薛健修改:目前只有一个Consumer - KafkaConsumer
         // DEBUG:设置为es7
-        consumer.setSenderConsumerEnum(SenderConsumerEnum.es7);
+//        consumer.setSenderConsumerEnum(SenderConsumerEnum.es7);
         KafkaConsumer<byte[]> doConsumer = new KafkaConsumer<>(consumer);
 
         String groupId = StringUtil.isNull(consumer.getGroupId()) ? Conf.get("common.others.kafka.consumer.group.id")
