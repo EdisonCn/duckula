@@ -20,9 +20,9 @@ public enum SenderConsumerEnum implements IEnumCombobox {
 
     no("no", "net.wicp.tams.duckula.kafka.consumer.impl.ConsumerSenderNothingImpl", "/consumersender/duckula-consumersender-es6/"),
 
-    es6("es6", "", "/consumersender/duckula-consumersender-es6/"),
+    es6("es6", "", "/csender/duckula-consumersender-es6/"),
 
-    es7("es7", "", "/consumersender/duckula-consumersender-es7/");
+    es7("es7", "", "/csender/duckula-consumersender-es7/");
 
     private final String desc;
     private final String pluginClass;// 插件类

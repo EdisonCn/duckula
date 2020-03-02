@@ -32,7 +32,6 @@
 		<module>duckula-dump-es7</module>
 		<module>duckula-consumersender-es6</module>
 		<module>duckula-consumersender-es7</module>
-		<module>duckula-consumersender-es6</module>
 	</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
