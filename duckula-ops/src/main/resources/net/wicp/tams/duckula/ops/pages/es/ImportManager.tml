@@ -68,7 +68,7 @@
 	                 </td>
 	                 <td class="frame_table_list_2_righttext" name="trdb">发送者</td>
 			         <td>
-			             <r:comboboxenum id="senderConsumerEnum_save"  name="senderConsumerEnum" enumClass="net.wicp.tams.duckula.common.beans.SenderConsumerEnum" required="true" changeHandle="changeSender" include="es,jdbc,no"></r:comboboxenum>
+			             <r:comboboxenum id="dumpEnum_save"  name="dumpEnum" enumClass="net.wicp.tams.duckula.common.constant.DumpEnum" required="true" changeHandle="changeSender"></r:comboboxenum>
 			         </td>
 			      </tr>
 			      
@@ -274,18 +274,14 @@
 		}
 	 }     
 	 function changeSender(val){      
-        if('es'==val){
+        if('es_v6'==val||'es_v7'==val){
             $('#middlewareType_save').combobox('setValue','es');
             //$('#middlewareInst_save').validatebox('required','true');           
             showRuleColumn(["index","key","relakey"]);
-        }else if('jdbc'==val){
+        }else if('mysql'==val){
             $('#middlewareType_save').combobox('setValue','');
            // $('#middlewareInst_save').validatebox('required','false');
             showRuleColumn(["key","dbinstanceid","dbtb"]);
-        }else if('kafka'==val){
-            $('#middlewareType_save').combobox('setValue','kafka');
-           // $('#middlewareInst_save').validatebox('required','false');
-            showRuleColumn(["key","topic"]);
         }else if('no'==val){
             $('#middlewareType_save').combobox('setValue','');
            // $('#middlewareInst_save').validatebox('required','false');
@@ -300,7 +296,7 @@
 	      },'json');
 	 }
 	function  updateRuleInput(index,data,changes){
-      			 var sendClassSel=  $('#senderConsumerEnum_save').combobox('getValue');
+      			 var sendClassSel=  $('#dumpEnum_save').combobox('getValue');
 				   if(sendClassSel==""){
 				      $.rjzjh.alert("请选择接收者!");
 				      return false;
@@ -308,7 +304,7 @@
 				   //数据检查
 				   var dgdata= $('#dg').edatagrid('getData');
 				   for (var row of dgdata.rows) {
-					  if(sendClassSel=='es'){
+					  if(sendClassSel=='es_v6'||sendClassSel=='es_v7'){
 			               if(row.index==''||row.key==''){
 				               $.rjzjh.alert('es发送类型需要设置索引、主键');
 				               return false;

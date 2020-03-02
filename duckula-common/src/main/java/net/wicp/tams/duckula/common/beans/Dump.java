@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.apiext.StringUtil;
+import net.wicp.tams.duckula.common.constant.DumpEnum;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
@@ -36,7 +37,7 @@ public class Dump {
 	private Integer cpu;// CPU数据
 	private Integer memory;// 内存 M
 
-	private SenderConsumerEnum senderConsumerEnum;
+	private DumpEnum dumpEnum;
 	private MiddlewareType middlewareType;// 中间件类型
 	private String middlewareInst;// 中间件配置
 	private String rules;
