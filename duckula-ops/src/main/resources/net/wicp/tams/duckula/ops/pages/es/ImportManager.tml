@@ -277,7 +277,7 @@
         if('es_v6'==val||'es_v7'==val){
             $('#middlewareType_save').combobox('setValue','es');
             //$('#middlewareInst_save').validatebox('required','true');           
-            showRuleColumn(["index","key","relakey"]);
+            showRuleColumn(["index"]);
         }else if('mysql'==val){
             $('#middlewareType_save').combobox('setValue','');
            // $('#middlewareInst_save').validatebox('required','false');
@@ -305,8 +305,8 @@
 				   var dgdata= $('#dg').edatagrid('getData');
 				   for (var row of dgdata.rows) {
 					  if(sendClassSel=='es_v6'||sendClassSel=='es_v7'){
-			               if(row.index==''||row.key==''){
-				               $.rjzjh.alert('es发送类型需要设置索引、主键');
+			               if(row.index==''){
+				               $.rjzjh.alert('es发送类型需要设置索引');
 				               return false;
 				           }
 			           }else if(sendClassSel=='redis'){

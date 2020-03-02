@@ -52,7 +52,7 @@ import net.wicp.tams.duckula.plugin.constant.RuleItem;
 public class SenderEs implements IBusiSender<DumpEvent> {
 	private static final org.slf4j.Logger errorlog = org.slf4j.LoggerFactory.getLogger("errorBinlog");
 	// private JSONObject relaObj;// relaObj.isEmpty 是已初始化但没有关联关系的索引
-	private static volatile boolean isInit = false;
+	private volatile boolean isInit = false;
 	private final Map<String, Rule> ruleMap = new HashMap<String, Rule>();
 	private Map<Rule, JSONObject> relaObjMap = new HashMap<Rule, JSONObject>();
 	private List<Rule> rulesList;
@@ -76,8 +76,8 @@ public class SenderEs implements IBusiSender<DumpEvent> {
 			Map<String, Propertie> queryMapping_tc_all = ESClientOnlyOne.getInst().getESClient().queryMapping_tc_all(
 					rule.getItems().get(RuleItem.index),
 					StringUtil.hasNull(rule.getItems().get(RuleItem.type), "_doc"));
-			if (queryMapping_tc_all.containsKey(rule.getItems().get(RuleItem.relakey))) {
-				relaObj = queryMapping_tc_all.get(rule.getItems().get(RuleItem.relakey)).getRelations();
+			if (queryMapping_tc_all.containsKey(Conf.get("common.es.assit.rela.key"))) {//含有join
+				relaObj = queryMapping_tc_all.get(Conf.get("common.es.assit.rela.key")).getRelations();
 			} else {
 				relaObj = new JSONObject();
 			}
