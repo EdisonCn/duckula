@@ -53,10 +53,10 @@
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-task</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-dump</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>net.wicp.tams</groupId>-->
+<!--			<artifactId>duckula-dump</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-kafka-consumer</artifactId>
@@ -68,7 +68,15 @@
 			<artifactId>duckula-plugin-es7</artifactId>
 		</dependency>
 
-
+		<!-- 新增es6/es7的Consumer Sender插件 -->
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-consumersender-es6</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-consumersender-es7</artifactId>
+		</dependency>
 
 	</dependencies>
 	<build>

@@ -11,7 +11,9 @@ public enum PluginType implements IEnumCombobox {
 
 	serializer("序列化插件", "/serializer"),
 
-	sender("发送者插件", "/sender");
+	sender("发送者插件", "/sender"),
+
+	consumersender("消费后续的发送者插件", "/consumersender");
 
 	private final String desc;
 	private final String pluginDirOri;// 值

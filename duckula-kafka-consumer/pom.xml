@@ -51,10 +51,10 @@
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>common-jdbc</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>common-es-client</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>net.wicp.tams</groupId>-->
+<!--			<artifactId>common-es-client</artifactId>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>net.wicp.tams</groupId>

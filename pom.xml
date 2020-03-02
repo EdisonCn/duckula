@@ -22,12 +22,14 @@
 
 		<module>duckula-busi-filter</module>
 		<module>duckula-plugin-elasticsearch</module>
-		<module>duckula-dump</module>
+<!--		<module>duckula-dump</module>-->
 		<module>duckula-kafka-consumer</module>
 
 		<module>duckula-plugin-kafka-idempotent</module>
         <module>duckula-plugin-es7</module>
 		<module>duckula-plugin-cassandra</module>
+		<module>duckula-consumersender-es7</module>
+		<module>duckula-consumersender-es6</module>
 	</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
@@ -182,11 +184,11 @@
 				<artifactId>duckula-task</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>net.wicp.tams</groupId>
-				<artifactId>duckula-dump</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+<!--			<dependency>-->
+<!--				<groupId>net.wicp.tams</groupId>-->
+<!--				<artifactId>duckula-dump</artifactId>-->
+<!--				<version>${project.version}</version>-->
+<!--			</dependency>-->
 			<dependency>
 				<groupId>net.wicp.tams</groupId>
 				<artifactId>duckula-kafka-consumer</artifactId>
@@ -197,6 +199,17 @@
 				<groupId>mysql</groupId>
 				<artifactId>mysql-connector-java</artifactId>
 				<version>5.1.47</version>
+			</dependency>
+			<!-- consumer sender插件 -->
+			<dependency>
+				<groupId>net.wicp.tams</groupId>
+				<artifactId>duckula-consumersender-es7</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.wicp.tams</groupId>
+				<artifactId>duckula-consumersender-es6</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
