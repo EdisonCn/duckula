@@ -38,7 +38,7 @@ import net.wicp.tams.duckula.kafka.consumer.MainConsumer;
 import net.wicp.tams.duckula.plugin.RuleManager;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
-import net.wicp.tams.duckula.plugin.pluginAssit;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.receiver.consumer.ConsumerSenderAbs;
 import net.wicp.tams.duckula.plugin.receiver.consumer.IBusiConsumer;
 import net.wicp.tams.duckula.plugin.receiver.consumer.IConsumerSender;
@@ -109,7 +109,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 
             try {
                 ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                Plugin plugin = pluginAssit.newPlugin(plugDirSys,
+                Plugin plugin = PluginAssit.newPlugin(plugDirSys,
                         "net.wicp.tams.duckula.plugin.receiver.consumer.IBusiConsumer", classLoader,
                         "net.wicp.tams.duckula.plugin.receiver.consumer.IBusiConsumer",
                         "net.wicp.tams.duckula.plugin.receiver.ReceiveAbs");
@@ -171,7 +171,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 
     private IConsumerSender<T> loadPluginSender(SenderConsumerEnum pluginSender, JSONObject senderParams) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Plugin plugin = pluginAssit.newPlugin(
+        Plugin plugin = PluginAssit.newPlugin(
                 IOUtil.mergeFolderAndFilePath(rootDir.getPath(),
                         pluginSender.getPluginJar()),
                 "net.wicp.tams.duckula.plugin.receiver.consumer.IConsumerSender", classLoader,

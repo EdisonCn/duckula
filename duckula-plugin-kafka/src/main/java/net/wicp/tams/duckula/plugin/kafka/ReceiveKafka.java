@@ -19,7 +19,7 @@ import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.MurmurHash3;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.others.kafka.KafkaAssitInst;
-import net.wicp.tams.duckula.plugin.pluginAssit;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.beans.DuckulaPackage;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.beans.SingleRecord;
@@ -54,9 +54,9 @@ public class ReceiveKafka extends ReceiveAbs {
 		int partitions = topicPartitionsMap.get(topic);
 		final CountDownLatch latch = new CountDownLatch(duckulaPackage.getRowsNum());
 		for (int i = 0; i < duckulaPackage.getRowsNum(); i++) {
-			Map<String, Map<String, String>> dataMap = pluginAssit.getAllData(duckulaPackage, i);
+			Map<String, Map<String, String>> dataMap = PluginAssit.getAllData(duckulaPackage, i);
 			String splitValue = dataMap
-					.get(dataMap.containsKey(pluginAssit.colAfter) ? pluginAssit.colAfter : pluginAssit.colBefore)
+					.get(dataMap.containsKey(PluginAssit.colAfter) ? PluginAssit.colAfter : PluginAssit.colBefore)
 					.get(splitKey);
 			final String key = String.format("%s|%s|%s", splitValue, duckulaPackage.getEventTable().getDb(),
 					duckulaPackage.getEventTable().getTb());

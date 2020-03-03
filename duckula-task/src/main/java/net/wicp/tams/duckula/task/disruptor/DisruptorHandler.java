@@ -10,7 +10,7 @@ import net.wicp.tams.common.exception.ExceptAll;
 import net.wicp.tams.common.exception.ProjectException;
 import net.wicp.tams.common.thread.threadlocal.PerThreadValue;
 import net.wicp.tams.common.thread.threadlocal.PerthreadManager;
-import net.wicp.tams.duckula.plugin.pluginAssit;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.busi.BusiAssit;
 import net.wicp.tams.duckula.plugin.busi.IBusi;
 import net.wicp.tams.duckula.task.Main;
@@ -23,7 +23,7 @@ public class DisruptorHandler implements WorkHandler<EventPackage> {
 
 	public DisruptorHandler() {
 		if (StringUtil.isNotNull(Main.context.getTask().getBusiDowithPluginDir())) {
-			Plugin busiPlugin = pluginAssit.newPlugin(
+			Plugin busiPlugin = PluginAssit.newPlugin(
 					IOUtil.mergeFolderAndFilePath(DisruptorSendHandler.rootDir.getPath(),
 							Main.context.getTask().getBusiDowithPluginDir()),
 					"net.wicp.tams.duckula.plugin.busi.IBusi", Thread.currentThread().getContextClassLoader(),

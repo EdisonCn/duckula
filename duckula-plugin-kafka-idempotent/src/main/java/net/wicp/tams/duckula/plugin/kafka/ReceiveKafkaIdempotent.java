@@ -18,7 +18,7 @@ import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.constant.OptType;
 import net.wicp.tams.common.others.kafka.KafkaAssitInst;
-import net.wicp.tams.duckula.plugin.pluginAssit;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.beans.DuckulaPackage;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.beans.SingleRecord;
@@ -96,7 +96,7 @@ public class ReceiveKafkaIdempotent extends ReceiveAbs {
 		
 		JSONArray ary = new JSONArray();
 		for (int i = 0; i < duckulaPackage.getRowsNum(); i++) {
-			Map<String, Map<String, String>> dataMap = pluginAssit.getAllData(duckulaPackage, i);			
+			Map<String, Map<String, String>> dataMap = PluginAssit.getAllData(duckulaPackage, i);			
 			JSONObject tempData = new JSONObject();
 			for (int keyindex : keyIndex) {				
 				tempData.put(cols[keyindex], orivalues[i][keyindex]);

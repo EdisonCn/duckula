@@ -19,7 +19,7 @@ import net.wicp.tams.common.apiext.LoggerUtil;
 import net.wicp.tams.common.constant.JvmStatus;
 import net.wicp.tams.duckula.common.beans.Pos;
 import net.wicp.tams.duckula.common.constant.SerializerEnum;
-import net.wicp.tams.duckula.plugin.pluginAssit;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
 import net.wicp.tams.duckula.plugin.receiver.IReceiver;
 import net.wicp.tams.duckula.plugin.receiver.ReceiveAbs;
@@ -54,7 +54,7 @@ public class DisruptorSendHandler implements EventHandler<EventPackage> {
 		Plugin serializerPlugin = null;
 		SerializerEnum serializerEnum = Main.context.getTask().getSerializerEnum();
 		if (serializerEnum != null && serializerEnum != SerializerEnum.no) {
-			serializerPlugin = pluginAssit.newPlugin(
+			serializerPlugin = PluginAssit.newPlugin(
 					IOUtil.mergeFolderAndFilePath(rootDir.getPath(),
 							Main.context.getTask().getSerializerEnum().getPluginJar()),
 					"net.wicp.tams.duckula.plugin.serializer.ISerializer", classLoader,
@@ -65,7 +65,7 @@ public class DisruptorSendHandler implements EventHandler<EventPackage> {
 			this.serialize = null;
 		}
 
-		Plugin plugin = pluginAssit.newPlugin(
+		Plugin plugin = PluginAssit.newPlugin(
 				IOUtil.mergeFolderAndFilePath(rootDir.getPath(), Main.context.getTask().getReceivePluginDir()),
 				"net.wicp.tams.duckula.plugin.receiver.IReceiver",
 				serializerPlugin == null ? classLoader : serializerPlugin.getLoad().getClassLoader(),

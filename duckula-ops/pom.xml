@@ -139,16 +139,6 @@
 		</dependency>
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
-			<artifactId>common-es-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
 			<artifactId>common-kubernetes</artifactId>
 		</dependency>
 		<dependency>

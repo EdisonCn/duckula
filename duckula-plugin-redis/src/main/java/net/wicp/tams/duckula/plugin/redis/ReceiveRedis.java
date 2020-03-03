@@ -16,7 +16,7 @@ import net.wicp.tams.common.constant.OptType;
 import net.wicp.tams.common.redis.RedisAssit;
 import net.wicp.tams.common.redis.cachecloud.CacheCloudAssit;
 import net.wicp.tams.common.redis.pool.AbsPool;
-import net.wicp.tams.duckula.plugin.pluginAssit;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.beans.DuckulaPackage;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.beans.SingleRecord;
@@ -39,7 +39,7 @@ public class ReceiveRedis extends ReceiveAbs {
 		Jedis jedis = absPool.getResource();
 		OptType optType = duckulaPackage.getEventTable().getOptType();
 		for (int i = 0; i < duckulaPackage.getRowsNum(); i++) {
-			Map<String, String> data = pluginAssit.getUseData(duckulaPackage, i);
+			Map<String, String> data = PluginAssit.getUseData(duckulaPackage, i);
 			CollectionUtil.filterNull(data, 1);// 过滤空值
 			String keyValue = String.format(rule.getItems().get(RuleItem.key), data.get(splitKey));
 			if (optType == OptType.delete) {
