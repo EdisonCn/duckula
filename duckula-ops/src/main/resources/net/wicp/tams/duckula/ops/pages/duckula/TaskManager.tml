@@ -339,7 +339,7 @@
            $('#middlewareType_save').combobox('setValue','kafka'); 
         }
         // 增加es7.x
-		else if("es_v7"===val){
+		else if("es_v7" === val){
 			$('td[name="othersender"]').css({"visibility":"hidden"});
 			$('#middlewareType_save').combobox('setValue','es');
 		}
@@ -363,7 +363,7 @@
         // 选择规则
         if('kafka'==val||"kafkaIde"===val){
            showRuleColumn(["topic","splitkey"]);
-        }else if('es'==val){
+        }else if('es' == val || 'es_v7' == val){
             showRuleColumn(["index","key","partitions","copynum"]);
         }else if('redis'==val){
             showRuleColumn(["key","splitkey","appid","redisurl"]);

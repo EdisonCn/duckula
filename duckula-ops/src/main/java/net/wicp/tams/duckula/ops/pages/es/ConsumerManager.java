@@ -232,7 +232,7 @@ public class ConsumerManager {
 						.getError(String.format("db:%s,tb:%s,需要设置idkey", rule.getDbPattern(), rule.getTbPattern())));
 			}
 
-			if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es
+			if ((consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6 || consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7)
 					&& StringUtil.isNull(rule.getItems().get(RuleItem.index))) {
 				return TapestryAssist.getTextStreamResponse(Result.getError(
 						String.format("db:%s,tb:%s,es发送者需要设置index", rule.getDbPattern(), rule.getTbPattern())));
@@ -268,8 +268,8 @@ public class ConsumerManager {
 				return TapestryAssist.getTextStreamResponse(Result.getError("已存在此任务"));
 			}
 		}
-		// 添加ES索引
-		if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es) {
+		// 添加ES索引(ves6版本)
+		if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6) {
 			Task task = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
 			for (Rule rule : consumerparam.getRuleList()) {
 				if (StringUtil.isNotNull(rule.getItems().get(RuleItem.copynum))
@@ -327,6 +327,10 @@ public class ConsumerManager {
 					}
 				}
 			}
+		}
+		// 添加ES索引(ves7版本)
+		if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
+
 		}
 
 		// Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(
