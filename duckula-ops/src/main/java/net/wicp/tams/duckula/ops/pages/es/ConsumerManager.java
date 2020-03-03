@@ -244,7 +244,7 @@ public class ConsumerManager {
 				return TapestryAssist.getTextStreamResponse(Result.getError(String
 						.format("db:%s,tb:%s,jdbc发送者需要设置dbinstanceid和dbtb", rule.getDbPattern(), rule.getTbPattern())));
 			}
-			
+
 			if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.kafka
 					&& StringUtil.isNull(rule.getItems().get(RuleItem.topic))) {
 				return TapestryAssist.getTextStreamResponse(Result.getError(
@@ -330,7 +330,7 @@ public class ConsumerManager {
 		}
 		// 添加ES索引(ves7版本)
 		if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
-
+			// TODO
 		}
 
 		// Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(
