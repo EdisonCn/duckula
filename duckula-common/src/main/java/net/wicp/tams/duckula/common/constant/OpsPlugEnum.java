@@ -25,7 +25,7 @@ public enum OpsPlugEnum implements IEnumCombobox {
 
 	es6("es6", "net.wicp.tams.duckula.plugin.es6.OpsPluginImpl", "/sender/duckula-plugin-elasticsearch/"),
 
-	es7("es7", "", "/sender/duckula-plugin-es7/");
+	es7("es7", "net.wicp.tams.duckula.plugin.es_v7.OpsPluginImpl", "/sender/duckula-plugin-es7/");
 
 	private final String desc;
 	private final String pluginClass;// 插件类
