@@ -5,8 +5,11 @@ import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.apiext.jdbc.JdbcConnection;
 import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
+import net.wicp.tams.common.apiext.json.EasyUiAssist;
+import net.wicp.tams.common.apiext.json.SimpleTreeNode;
 import net.wicp.tams.common.constant.dic.YesOrNo;
 import net.wicp.tams.common.es.EsAssit;
+import net.wicp.tams.common.es.bean.AliasesBean;
 import net.wicp.tams.common.es.bean.IndexBean;
 import net.wicp.tams.common.es.bean.MappingBean;
 import net.wicp.tams.common.es.client.ESClient;
@@ -93,6 +96,76 @@ public class OpsPluginImpl implements IOps {
             }
         }
         return retRules;
+    }
+
+    @Override
+    public Set<String> getAliases(String cluster, String aliasesPattern, String aliasPrefix) {
+        Set<String> indexSet = new TreeSet<>();
+        List<AliasesBean> queryAliases = getESClient(cluster).queryAliases(aliasesPattern);
+        if (StringUtil.isNotNull(aliasPrefix)) {
+            for (AliasesBean aliasesBean : queryAliases) {
+                if (aliasesBean.getAlias().startsWith(aliasPrefix)) {
+                    indexSet.add(aliasesBean.getIndex());
+                }
+            }
+        }
+        return indexSet;
+    }
+
+    @Override
+    public boolean isExists(String cluster, String indexPattern, String index) {
+        List<IndexBean> indexBeans = getESClient(cluster).queryIndex(indexPattern);
+        boolean exists = false;
+        for (IndexBean indexBean : indexBeans) {
+            if (indexBean.getIndex().equals(index)) {
+                exists = true;
+                break;
+            }
+        }
+        return exists;
+    }
+
+    @Override
+    public String getIndicesJson(String cluster) {
+        List<IndexBean> queryIndexs = getESClient(cluster).queryIndex(null);
+        return EasyUiAssist.getJsonForGridAlias(queryIndexs, queryIndexs.size());
+    }
+
+    @Override
+    public Result renameIndex(String cluster, String oldIndex, String newIndex, String[] aliases) {
+        List<IndexBean> oldIndexs = getESClient(cluster).queryIndex(oldIndex);
+        Result retResult = null;
+        if (oldIndexs.size() == 0) {
+            retResult = getESClient(cluster).aliasCreate(newIndex, aliases);
+        } else {
+            retResult = getESClient(cluster).indexReplace(newIndex, oldIndex, false, aliases);
+        }
+        return retResult;
+    }
+
+    @Override
+    public Result aliasCreate(String cluster, String indexNamePatten, String... aliases) {
+        return getESClient(cluster).aliasCreate(indexNamePatten, aliases);
+    }
+
+    @Override
+    public String packIndexContent(String[] colName, String[] colType, List<SimpleTreeNode> nodes) {
+        return EsAssit.packIndexContent(colName, colType, nodes);
+    }
+
+    @Override
+    public Result createIndex(String cluster, String mappingId, String index, String type, String content, int shardsNum, int replicas) {
+        Result createIndex;
+        MappingBean proMappingBean = MappingBean.proMappingBean(content);
+        if (StringUtil.isNotNull(mappingId)) {// 修改
+            // 为了安全，不删除索引
+            // getESClient(cluster).indexDel(mappingparam.getIndex());
+            createIndex = Result.getSuc();
+        } else {
+//                mappingparam.setId(index + "-" + type);
+            createIndex = getESClient(cluster).indexCreate(index, shardsNum, replicas, null, proMappingBean);
+        }
+        return createIndex;
     }
 
 }
