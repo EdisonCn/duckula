@@ -21,6 +21,7 @@ import net.wicp.tams.duckula.common.beans.Mapping;
 import net.wicp.tams.duckula.common.beans.SenderConsumerEnum;
 import net.wicp.tams.duckula.common.beans.Task;
 import net.wicp.tams.duckula.common.constant.CommandType;
+import net.wicp.tams.duckula.common.constant.OpsPlugEnum;
 import net.wicp.tams.duckula.common.constant.TaskPattern;
 import net.wicp.tams.duckula.common.constant.ZkPath;
 import net.wicp.tams.duckula.ops.beans.Server;
@@ -260,16 +261,32 @@ public class ConsumerManager {
         }
 
         // 添加ES索引
-        if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6
-                || consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
+//        if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6
+//                || consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
+//
+//            // 根据TaskId获取任务
+//            Task taskparam = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
+//            IOps ops = taskparam.getSenderEnum().getOpsPlugEnum().newOps();
+//            List<Rule> rules = ops.createIndex(taskparam.getRules(), taskparam.getMiddlewareInst(),
+//                    taskparam.getIp(), taskparam.getPort(), taskparam.getUser(), taskparam.getPwd());
+//            saveToZk(ops, rules, taskparam);
+//        }
 
-            // 根据TaskId获取任务
+        IOps ops = null;
+        if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6) {
+            // ES6
+            ops = OpsPlugEnum.es6.newOps();
+        } else if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
+            // ES7
+            ops = OpsPlugEnum.es7.newOps();
+        }
+        if (ops != null) {
             Task taskparam = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
-            IOps ops = taskparam.getSenderEnum().getOpsPlugEnum().newOps();
             List<Rule> rules = ops.createIndex(taskparam.getRules(), taskparam.getMiddlewareInst(),
                     taskparam.getIp(), taskparam.getPort(), taskparam.getUser(), taskparam.getPwd());
             saveToZk(ops, rules, taskparam);
         }
+
 
         // Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(
         // ZkPath.consumers.getPath(consumerparam.getId()),
