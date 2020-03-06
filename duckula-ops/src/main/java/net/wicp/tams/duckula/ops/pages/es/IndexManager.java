@@ -19,12 +19,13 @@ import net.wicp.tams.component.tools.TapestryAssist;
 import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.Mapping;
-import net.wicp.tams.duckula.common.beans.Task;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
+import net.wicp.tams.duckula.common.constant.OpsPlugEnum;
 import net.wicp.tams.duckula.common.constant.ZkPath;
 import net.wicp.tams.duckula.ops.beans.DbInstance;
 import net.wicp.tams.duckula.ops.servicesBusi.IDuckulaAssit;
 import net.wicp.tams.duckula.plugin.IOps;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tapestry5.annotations.Property;
@@ -36,6 +37,7 @@ import org.apache.tapestry5.util.TextStreamResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 @Slf4j
@@ -58,9 +60,26 @@ public class IndexManager {
      * eSClientExists; private boolean sessionExists;
      */
 
+    private String esVersion;
+    private IOps iOps;
+
     private IOps getOps() {
-        final Task taskparam = TapestryAssist.getBeanFromPage(Task.class, requestGlobals);
-        return taskparam.getSenderEnum().getOpsPlugEnum().newOps();
+        // 获取ES版本
+        Properties configMiddleware = PluginAssit.configMiddleware("es", "dev");
+        Object version = configMiddleware.get("common.es.version");
+        String currentVersion = "es" + (version == null ? "7" : version.toString());
+        // 当前版本与存储版本不一样,需要切换版本
+        if (!currentVersion.equals(esVersion)) {
+            esVersion = currentVersion;
+            iOps = OpsPlugEnum.valueOf(esVersion).newOps();
+        }
+        return iOps;
+
+//        final Task taskparam = TapestryAssist.getBeanFromPage(Task.class, requestGlobals);
+//        return taskparam.getSenderEnum().getOpsPlugEnum().newOps();
+
+//        final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
+//        return null;
     }
 
 //
@@ -194,6 +213,11 @@ public class IndexManager {
         }
     }
 
+    /**
+     * 薛健注:此处指定了中间件类型为es,并未指定中间件实例到底为es6还是es7
+     * @param middlewareTypeStr
+     * @return
+     */
     public TextStreamResponse onQueryMiddlewareType(String middlewareTypeStr) {
         if (StringUtil.isNull(middlewareTypeStr)) {
             return TapestryAssist.getTextStreamResponse("[]");
