@@ -155,7 +155,7 @@ public class DuckulaContext {
 			conn = JdbcConnection.getConnection("com.mysql.jdbc.Driver", url, this.task.getUser(), this.task.getPwd());
 			if (prepCols == null || prepCols.isClosed()) {//
 				prepCols = conn.prepareStatement(
-						"select   column_name,data_type   from  information_schema.columns  where  table_schema=? and table_name=?");
+						"select   column_name,data_type   from  information_schema.columns  where  table_schema=? and table_name=? order by ORDINAL_POSITION");
 			}
 			List<String> ret = new ArrayList<>();
 			List<String> retType = new ArrayList<>();
