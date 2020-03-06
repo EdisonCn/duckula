@@ -4,9 +4,9 @@ import net.wicp.tams.common.constant.dic.intf.IEnumCombobox;
 
 public enum DumpEnum implements IEnumCombobox {
 
-	es_v6("es搜索(v<7)", "/dsender/duckula-dump-es6/", "net.wicp.tams.duckula.dump.es6.SenderEs", MiddlewareType.es),
+	es_v6("es搜索(v<7)", "/sender/duckula-plugin-es6/", "net.wicp.tams.duckula.plugin.es6.Es6Dumper", MiddlewareType.es),
 
-	es_v7("es搜索(v=7.x)", "/dsender/duckula-dump-es7/", "net.wicp.tams.duckula.dump.es7.SenderEs", MiddlewareType.es),
+	es_v7("es搜索(v=7.x)", "/sender/duckula-plugin-es7/", "net.wicp.tams.duckula.plugin.es7.Es7Dumper", MiddlewareType.es),
 
 	mysql("mysql发送者", "", "mysql", null),
 

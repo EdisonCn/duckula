@@ -21,17 +21,19 @@
 
 
 		<module>duckula-busi-filter</module>
-		<module>duckula-plugin-elasticsearch</module>
 		<module>duckula-dump</module>
 		<module>duckula-kafka-consumer</module>
 
 		<module>duckula-plugin-kafka-idempotent</module>
-        <module>duckula-plugin-es7</module>
 		<module>duckula-plugin-cassandra</module>
-		<module>duckula-dump-es6</module>
-		<module>duckula-dump-es7</module>
-		<module>duckula-consumersender-es6</module>
-		<module>duckula-consumersender-es7</module>
+		<module>duckula-plugin-es6</module>
+		<module>duckula-plugin-es7</module>
+
+		<!-- 模块合并 -->
+<!--		<module>duckula-dump-es6</module>-->
+<!--		<module>duckula-dump-es7</module>-->
+<!--		<module>duckula-consumersender-es6</module>-->
+<!--		<module>duckula-consumersender-es7</module>-->
 	</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
@@ -173,7 +175,7 @@
 			</dependency>
 			<dependency>
 				<groupId>net.wicp.tams</groupId>
-				<artifactId>duckula-plugin-elasticsearch</artifactId>
+				<artifactId>duckula-plugin-es6</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -202,17 +204,19 @@
 				<artifactId>mysql-connector-java</artifactId>
 				<version>5.1.47</version>
 			</dependency>
-			<!-- consumer sender插件 -->
-			<dependency>
-				<groupId>net.wicp.tams</groupId>
-				<artifactId>duckula-consumersender-es7</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.wicp.tams</groupId>
-				<artifactId>duckula-consumersender-es6</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+
+			<!-- duckula-consumersender整合进plugin -->
+<!--			&lt;!&ndash; consumer sender插件 &ndash;&gt;-->
+<!--			<dependency>-->
+<!--				<groupId>net.wicp.tams</groupId>-->
+<!--				<artifactId>duckula-consumersender-es7</artifactId>-->
+<!--				<version>${project.version}</version>-->
+<!--			</dependency>-->
+<!--			<dependency>-->
+<!--				<groupId>net.wicp.tams</groupId>-->
+<!--				<artifactId>duckula-consumersender-es6</artifactId>-->
+<!--				<version>${project.version}</version>-->
+<!--			</dependency>-->
 		</dependencies>
 	</dependencyManagement>
 

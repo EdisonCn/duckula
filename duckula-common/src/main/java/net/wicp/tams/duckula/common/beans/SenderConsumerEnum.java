@@ -14,9 +14,9 @@ public enum SenderConsumerEnum implements IEnumCombobox {
 
 //    es("es搜索", "net.wicp.tams.duckula.kafka.consumer.impl.ConsumerSenderEsImpl", ""),
 
-    es6("es6", "", "/csender/duckula-consumersender-es6/"),
+    es6("es6", "", "/sender/duckula-plugin-es6"),
 
-    es7("es7", "", "/csender/duckula-consumersender-es7/"),
+    es7("es7", "", "/sender/duckula-plugin-es7/"),
 
     jdbc("mysql", "net.wicp.tams.duckula.kafka.consumer.impl.ConsumerSenderMysqlImpl", ""), // TODO 可以选择配置到哪个数据库
 

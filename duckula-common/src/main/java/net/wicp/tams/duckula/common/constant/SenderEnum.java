@@ -9,7 +9,7 @@ public enum SenderEnum implements IEnumCombobox {
 
 	kafka("kafka消息", "/sender/duckula-plugin-kafka/", MiddlewareType.kafka, false, null),
 
-	es("es搜索(v<7)", "/sender/duckula-plugin-elasticsearch/", MiddlewareType.es, false, OpsPlugEnum.es6),
+	es("es搜索(v<7)", "/sender/duckula-plugin-es6/", MiddlewareType.es, false, OpsPlugEnum.es6),
 
 	es_v7("es搜索(v=7.x)", "/sender/duckula-plugin-es7/", MiddlewareType.es, false, OpsPlugEnum.es7),
 

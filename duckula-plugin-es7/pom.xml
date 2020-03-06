@@ -15,13 +15,92 @@
     </properties>
 
     <dependencies>
+        <!-- es通用包 -->
         <dependency>
             <groupId>net.wicp.tams</groupId>
             <artifactId>common-es-client</artifactId>
         </dependency>
+
+
+        <!-- 1.Receiver -->
         <dependency>
             <groupId>net.wicp.tams</groupId>
             <artifactId>duckula-dev-plugin-receiver</artifactId>
+        </dependency>
+
+        <!-- 2.ConsumerSender -->
+        <!-- log4j2 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-metrics</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>duckula-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-others</artifactId>
+        </dependency>
+        <!-- kafka 要求的依赖，由于common-others是个大杂汇，要依赖的第三方包较多，所以干脆第三方全部舍弃，要使用哪个模块时自行加上 -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>duckula-dev-plugin-consumer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>duckula-dev-client-protobuf3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-apiext</artifactId>
+        </dependency>
+        <!--S3 -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+        </dependency>
+
+        <!-- 3.Dumper -->
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-binlog-alone</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>duckula-dev-plugin-consumer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>duckula-dev-plugin-common</artifactId>
         </dependency>
     </dependencies>
 

@@ -9,6 +9,21 @@
 	</parent>
 	<artifactId>duckula-install</artifactId>
 	<dependencies>
+		<!-- 主调方 -->
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-task</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-kafka-consumer</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.wicp.tams</groupId>
+			<artifactId>duckula-dump</artifactId>
+		</dependency>
+
+		<!-- 序列化插件 -->
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-serializer-protobuf2</artifactId>
@@ -25,6 +40,8 @@
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-serializer-thrift</artifactId>
 		</dependency>
+
+		<!-- Sender插件 -->
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-plugin-redis</artifactId>
@@ -43,46 +60,35 @@
 		</dependency>
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-plugin-elasticsearch</artifactId>
+			<artifactId>duckula-plugin-es6</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-busi-filter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-task</artifactId>
-		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>net.wicp.tams</groupId>-->
-<!--			<artifactId>duckula-dump</artifactId>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-kafka-consumer</artifactId>
-		</dependency>
-
-		<!-- 新增es7接受者插件 -->
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>duckula-plugin-es7</artifactId>
 		</dependency>
 
-		<!-- 新增es6/es7的Consumer Sender插件 -->
+		<!-- 业务插件 -->
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-consumersender-es6</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-consumersender-es7</artifactId>
+			<artifactId>duckula-busi-filter</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>net.wicp.tams</groupId>
-			<artifactId>duckula-dump-es6</artifactId>
-			<version>2.0.0</version>
-		</dependency>
+
+		<!--		&lt;!&ndash; 新增es6/es7的Consumer Sender插件 &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>net.wicp.tams</groupId>-->
+<!--			<artifactId>duckula-consumersender-es6</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>net.wicp.tams</groupId>-->
+<!--			<artifactId>duckula-consumersender-es7</artifactId>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>net.wicp.tams</groupId>-->
+<!--			<artifactId>duckula-dump-es6</artifactId>-->
+<!--			<version>2.0.0</version>-->
+<!--		</dependency>-->
 	</dependencies>
 	<build>
 		<finalName>duckula-install</finalName>
@@ -102,7 +108,7 @@
 								<param>duckula-plugin-redis</param>
 								<param>duckula-plugin-kafka</param>
 								<param>duckula-plugin-kafka-idempotent</param>
-								<param>duckula-plugin-elasticsearch</param>
+								<param>duckula-plugin-es6</param>
 								<param>duckula-plugin-es7</param>
 								<param>duckula-plugin-cassandra</param>
 							</plugs>
@@ -113,11 +119,11 @@
 								<param>duckula-serializer-thrift</param>
 							</serializers>
 							<dumpSenders>
-							    <param>duckula-dump-es6</param>
+<!--							    <param>duckula-dump-es6</param>-->
 							</dumpSenders>
 							<consumerSenders>
-							    <param>duckula-consumersender-es6</param>
-							    <param>duckula-consumersender-es7</param>
+<!--							    <param>duckula-consumersender-es6</param>-->
+<!--							    <param>duckula-consumersender-es7</param>-->
 							</consumerSenders>
 							<env>
 								test
