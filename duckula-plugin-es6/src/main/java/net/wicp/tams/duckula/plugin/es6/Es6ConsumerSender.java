@@ -1,4 +1,4 @@
-package net.wicp.tams.duckula.consumersender.es6;
+package net.wicp.tams.duckula.plugin.es6;
 
 import com.alibaba.fastjson.JSONObject;
 import net.wicp.tams.common.Conf;
@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ConsumerSenderEs6Impl extends ConsumerSenderAbs<Builder> {
+public class Es6ConsumerSender extends ConsumerSenderAbs<Builder> {
 
     protected static final org.slf4j.Logger errorlog = org.slf4j.LoggerFactory.getLogger("errorBinlog");// 需要跳过的错误数据。
 
@@ -35,7 +35,7 @@ public class ConsumerSenderEs6Impl extends ConsumerSenderAbs<Builder> {
 
     private final String keyFormate = "%s:%s";
 
-    public ConsumerSenderEs6Impl(JSONObject params) {
+    public Es6ConsumerSender(JSONObject params) {
         super(params);
     }
 
