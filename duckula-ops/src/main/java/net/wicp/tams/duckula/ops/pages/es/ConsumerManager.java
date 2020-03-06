@@ -262,6 +262,7 @@ public class ConsumerManager {
         // 添加ES索引
         if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6
                 || consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
+
             // 根据TaskId获取任务
             Task taskparam = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
             IOps ops = taskparam.getSenderEnum().getOpsPlugEnum().newOps();

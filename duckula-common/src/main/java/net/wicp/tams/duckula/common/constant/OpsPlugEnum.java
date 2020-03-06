@@ -43,29 +43,18 @@ public enum OpsPlugEnum implements IEnumCombobox {
         this.desc = desc;
         this.pluginClass = pluginClass;
         this.pluginJar = pluginJar;
-//		this.classLoader = new ClassLoaderPlugin(
-//				IOUtil.mergeFolderAndFilePath(ConfUtil.getDatadir(false), this.pluginJar),
-//				Thread.currentThread().getContextClassLoader(), 1).getClassLoader();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String plugDirSys = IOUtil.mergeFolderAndFilePath(ConfUtil.getDatadir(false), pluginJar);
         Plugin plugin = PluginAssit.newPlugin(plugDirSys,
                 pluginClass, classLoader,
                 "net.wicp.tams.duckula.plugin.IOps");
         this.classLoader = plugin.getLoad().getClassLoader();
-        Thread.currentThread().setContextClassLoader(this.classLoader);// 需要加载前设置好classload
     }
 
     public IOps newOps() {
         try {
-//			Object newInstance = this.classLoader.loadClass(this.pluginClass).newInstance();
-//			return (IOps) newInstance;
-//			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-//			String plugDirSys = IOUtil.mergeFolderAndFilePath(ConfUtil.getDatadir(false), pluginJar);
-//			Plugin plugin = PluginAssit.newPlugin(plugDirSys,
-//					pluginClass, classLoader,
-//					"net.wicp.tams.duckula.plugin.IOps");
-//			Thread.currentThread().setContextClassLoader(plugin.getLoad().getClassLoader());// 需要加载前设置好classload
-//			return (IOps) plugin.newObject();
+            // 切换ClassLoader再拿Ops插件实例
+            Thread.currentThread().setContextClassLoader(this.classLoader);// 需要加载前设置好classload
             return (IOps) this.classLoader.loadClass(this.pluginClass).newInstance();
         } catch (Exception e) {
             log.error("load the class error:" + this.pluginClass, e);
