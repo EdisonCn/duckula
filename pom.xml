@@ -30,15 +30,15 @@
 		<module>duckula-plugin-es7</module>
 
 		<!-- 模块合并 -->
-<!--		<module>duckula-dump-es6</module>-->
-<!--		<module>duckula-dump-es7</module>-->
-<!--		<module>duckula-consumersender-es6</module>-->
-<!--		<module>duckula-consumersender-es7</module>-->
+		<!-- <module>duckula-dump-es6</module> -->
+		<!-- <module>duckula-dump-es7</module> -->
+		<!-- <module>duckula-consumersender-es6</module> -->
+		<!-- <module>duckula-consumersender-es7</module> -->
 	</modules>
 	<parent>
 		<groupId>net.wicp.tams</groupId>
 		<artifactId>parent</artifactId>
-		<version>46</version>
+		<version>48</version>
 	</parent>
 	<properties>
 		<java.version>1.8</java.version>
@@ -60,7 +60,7 @@
 		<common.jdbc.version>3.6.5</common.jdbc.version>
 		<common.os.version>3.6.0</common.os.version>
 		<common.redis.version>3.6.3</common.redis.version>
-		<common.es.client.version>3.6.6</common.es.client.version>
+		<common.es.client.version>7.6.0</common.es.client.version>
 		<common.kubernetes.version>3.6.7</common.kubernetes.version>
 		<common.cassandra.version>3.6.7</common.cassandra.version>
 		<common.binlog.alone.version>3.6.10</common.binlog.alone.version>
@@ -113,11 +113,6 @@
 			<dependency>
 				<groupId>net.wicp.tams</groupId>
 				<artifactId>duckula-common</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.wicp.tams</groupId>
-				<artifactId>duckula-client-thrift</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -198,25 +193,6 @@
 				<artifactId>duckula-kafka-consumer</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<!-- 支持mysql8 -->
-			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-				<version>5.1.47</version>
-			</dependency>
-
-			<!-- duckula-consumersender整合进plugin -->
-<!--			&lt;!&ndash; consumer sender插件 &ndash;&gt;-->
-<!--			<dependency>-->
-<!--				<groupId>net.wicp.tams</groupId>-->
-<!--				<artifactId>duckula-consumersender-es7</artifactId>-->
-<!--				<version>${project.version}</version>-->
-<!--			</dependency>-->
-<!--			<dependency>-->
-<!--				<groupId>net.wicp.tams</groupId>-->
-<!--				<artifactId>duckula-consumersender-es6</artifactId>-->
-<!--				<version>${project.version}</version>-->
-<!--			</dependency>-->
 		</dependencies>
 	</dependencyManagement>
 
