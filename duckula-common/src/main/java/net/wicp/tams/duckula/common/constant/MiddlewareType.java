@@ -11,20 +11,21 @@ import org.apache.commons.collections.MapUtils;
 
 import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.IOUtil;
+import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.apiext.json.JSONUtil;
 import net.wicp.tams.common.constant.dic.intf.IEnumCombobox;
 
 public enum MiddlewareType implements IEnumCombobox {
-	kafka("kafka",true),
+	kafka("kafka", true),
 
-	es("elasticsearch",false),
-	
-	cassandra("cassandra",false),
+	es("elasticsearch", false),
 
-	redis("redis",true);
+	cassandra("cassandra", false),
+
+	redis("redis", true);
 
 	private final String desc;
-	
+
 	private final boolean isMiddleSave;
 
 	public boolean isMiddleSave() {
@@ -33,6 +34,8 @@ public enum MiddlewareType implements IEnumCombobox {
 
 	private Map<String, Map<String, String[]>> hostMap = new HashMap<>();// key:dev,value:mao<ip,hosts>.
 																			// 需要设置的hosts，在docker和k8s中需要被配置
+
+	private Map<String, List<String>> versionMap = new HashMap<String, List<String>>();// key:version ，value:ids 中间件不同版本
 
 	private final List<String> eleList = new ArrayList<>();
 
@@ -48,7 +51,7 @@ public enum MiddlewareType implements IEnumCombobox {
 	 * @return
 	 */
 	public String getHostStr() {
-		getEleList();
+		getEleList(null);
 		if (MapUtils.isEmpty(hostMap)) {
 			return "";
 		}
@@ -58,7 +61,7 @@ public enum MiddlewareType implements IEnumCombobox {
 			for (String ip : map.keySet()) {
 				String[] names = map.get(ip);
 				for (String name : names) {
-					buff.append(String.format("\n%s     %s", ip,name));
+					buff.append(String.format("\n%s     %s", ip, name));
 				}
 			}
 		}
@@ -70,7 +73,7 @@ public enum MiddlewareType implements IEnumCombobox {
 	 * 
 	 * @return
 	 */
-	public List<String> getEleList() {
+	public List<String> getEleList(String version) {
 		if (!isInit) {
 			synchronized (MiddlewareType.class) {
 				if (!isInit) {
@@ -88,22 +91,29 @@ public enum MiddlewareType implements IEnumCombobox {
 						}
 						this.hostMap.put(ele, tempmap);
 						this.eleList.add(ele);
+						// 区分版本
+						String versionconf = fileToProperties.getProperty("middleware.version");
+						String vesionKey = StringUtil.hasNull(versionconf, "default");
+						if (this.versionMap.get(vesionKey) == null) {
+							this.versionMap.put(vesionKey, new ArrayList<String>());
+						}
+						this.versionMap.get(vesionKey).add(ele);
 					}
 					isInit = true;
 				}
 			}
 		}
-		return this.eleList;
+		return StringUtil.isNull(version) ? this.eleList : this.versionMap.get(version);
 	}
 
-	public String getEleJson() {
-		String retlist = JSONUtil.getJsonForListSimple(this.getEleList());
+	public String getEleJson(String version) {
+		String retlist = JSONUtil.getJsonForListSimple(this.getEleList(version));
 		return retlist;
 	}
 
-	private MiddlewareType(String desc,boolean isMiddleSave) {
+	private MiddlewareType(String desc, boolean isMiddleSave) {
 		this.desc = desc;
-		this.isMiddleSave=isMiddleSave;
+		this.isMiddleSave = isMiddleSave;
 	}
 
 	public static MiddlewareType get(String name) {
@@ -128,7 +138,7 @@ public enum MiddlewareType implements IEnumCombobox {
 	}
 
 	public Map<String, String[]> getHostMap(String inst) {
-		if (!getEleList().contains(inst)) {
+		if (!getEleList(null).contains(inst)) {
 			return new HashMap<>();
 		}
 		return this.hostMap.get(inst);

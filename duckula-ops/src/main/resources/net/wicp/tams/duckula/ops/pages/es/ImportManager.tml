@@ -79,7 +79,7 @@
 	               </td>
 			 	  	 <td class="frame_table_list_2_righttext">中间件实例</td>
 			 	     <td>
-			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareType" parent="middlewareType_save" required="false"></r:combobox>
+			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareTypeAll" parent="middlewareType_save" required="false"></r:combobox>
 			 	     </td>
 			      </tr>		      
 			      <tr>
@@ -276,6 +276,7 @@
 	 function changeSender(val){      
         if('es_v6'==val||'es_v7'==val){
             $('#middlewareType_save').combobox('setValue','es');
+            $('#middlewareInst_save').combobox('reload'); //需要过滤版本  
             //$('#middlewareInst_save').validatebox('required','true');           
             showRuleColumn(["index"]);
         }else if('mysql'==val){
@@ -352,7 +353,19 @@
 				autoSave: false,
 				onDestroy: updateRuleInput,
 				onAfterEdit: updateRuleInput
-      });   
+      });
+     
+     $('#middlewareInst_save').combobox({
+			onBeforeLoad: function(param){
+			    var version=  $('#dumpEnum_save').combobox('getValue');
+			    if(version=='es_v6'){
+			       param.version = "6";
+			    }else if(version=='es_v7'){
+			       param.version = "7";
+			    }
+			    $('#middlewareInst_save').combobox('setValue','');
+			}
+	  }); 
    });    
    
 </script>

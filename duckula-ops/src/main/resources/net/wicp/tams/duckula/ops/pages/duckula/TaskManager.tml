@@ -160,7 +160,7 @@
 	               </td>
 			 	  	 <td class="frame_table_list_2_righttext">中间件实例</td>
 			 	     <td>
-			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareType" parent="middlewareType_save" required="true"></r:combobox>
+			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareTypeAll" parent="middlewareType_save" required="true"></r:combobox>
 			 	     </td>
 			      </tr>
 			      <tr>
@@ -364,6 +364,7 @@
         if('kafka'==val||"kafkaIde"===val){
            showRuleColumn(["topic","splitkey"]);
         }else if('es' == val || 'es_v7' == val){
+            $('#middlewareInst_save').combobox('reload'); //需要过滤版本  
             showRuleColumn(["index","key","partitions","copynum"]);
         }else if('redis'==val){
             showRuleColumn(["key","splitkey","appid","redisurl"]);
@@ -610,7 +611,20 @@
          }else{
             $('#namespace_save').validatebox('readonly',true);
          }
-      }     
+      }
+      
+      
+      $('#middlewareInst_save').combobox({
+			onBeforeLoad: function(param){
+			    var version=  $('#senderClass_save').combobox('getValue');
+			    if(version=='es'){
+			       param.version = "6";
+			    }else if(version=='es_v7'){
+			       param.version = "7";
+			    }
+			    $('#middlewareInst_save').combobox('setValue','');
+			}
+	  });   
    });
 </script>
 </body>

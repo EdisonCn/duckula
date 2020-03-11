@@ -97,7 +97,7 @@
 	               </td>
 			 	  	 <td class="frame_table_list_2_righttext">中间件实例</td>
 			 	     <td>
-			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareType" parent="middlewareType_save" required="false"></r:combobox>
+			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareTypeAll" parent="middlewareType_save" required="false"></r:combobox>
 			 	     </td>
 			      </tr>
 			      
@@ -196,11 +196,17 @@
 		}
 	 }
 	 
+	 function filterVersion(){
+	   alert(2);
+	 }
 	 
+	 
+	 //var version="/duckula-ops/zh/es/indexManager:queryMiddlewareTypeAll?parent=es"
 	 function changeSender(val){      
         if('es6' == val || 'es7' == val){
             $('#middlewareType_save').combobox('setValue','es');
-            //$('#middlewareInst_save').validatebox('required','true');           
+            //$('#middlewareInst_save').validatebox('required','true');  
+            $('#middlewareInst_save').combobox('reload'); //需要过滤版本       
             showRuleColumn(["index","key","relakey","partitions","copynum"]);
         }else if('jdbc'==val){
             $('#middlewareType_save').combobox('setValue','');
@@ -379,6 +385,17 @@
 				onDestroy: updateRuleInput,
 				onAfterEdit: updateRuleInput
       }); 
+      $('#middlewareInst_save').combobox({
+			onBeforeLoad: function(param){
+			    var version=  $('#senderConsumerEnum_save').combobox('getValue');
+			    if(version=='es6'){
+			       param.version = "6";
+			    }else if(version=='es7'){
+			       param.version = "7";
+			    }
+			    $('#middlewareInst_save').combobox('setValue','');
+			}
+	  });
    });    
    
 </script>
