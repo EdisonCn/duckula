@@ -1,6 +1,6 @@
 image: registry.choerodon.xforceplus.com/rjzjh/duckula
-imageOpsTag: ops.2.4.2
-imageDataTag: data.2.4.2
+imageOpsTag: ops.2.5.0
+imageDataTag: data.2.5.0
 imagePullPolicy: IfNotPresent
 env:
   zk: 192.168.11.80:2181
@@ -15,7 +15,7 @@ persistence:
   # 指定存储，推荐使用此方式，注意创建的的访问模式为：accessMode: ReadWriteMany
   #existingClaim: duckula-test-duckula-data
   # 快速搭建demo可以使用此方式，要求k8s拥有此storageClass
-  storageClass: "xforcecloud-disk-share"
+  storageClass: xforcecloud-disk-share
   accessMode: ReadWriteMany
   size: 40Gi
   annotations: {}
@@ -86,7 +86,7 @@ userconfig:
       #k8s,此参数需要跟据情况修改为自己的私有镜像库
       #duckula.task.image.name=192.168.137.100:5000/rjzjh/duckula
       duckula.task.image.name=registry.choerodon.xforceplus.com/rjzjh/duckula
-      duckula.task.image.tag=task.2.4.2
+      duckula.task.image.tag=task.2.5.0
       #位点保留最大天数
       duckula.ops.pos.maxsize=2
   es:
@@ -118,6 +118,36 @@ userconfig:
       docker.host.ip.192.168.11.116=node-es1
       docker.host.ip.192.168.11.117=node-es2
       docker.host.ip.192.168.11.118=node-es3
+      middleware.version=6
+    es-v7.properties: |-
+      #此配置为示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
+      common.es.host.name=xfp-es7dot6-fat-1,xfp-es7dot6-fat-2,xfp-es7dot6-fat-3
+      common.es.cluster.name=xfp-es7dot6-fat
+      common.es.host.port.rest=9200
+      common.es.host.port.transport=9300
+      common.es.host.scheme=http
+      #ping命令响应的超时时间
+      common.es.client.transport.ping_timeout=5s
+      #检查节点可用性的时间间隔
+      common.es.client.transport.nodes_sampler_interval=5s
+      common.es.http.head=header=value&
+      #The default value is 30 seconds 与socket timeout相同，如果socket timeout设置了，则它失效
+      common.es.http.maxRetryTimeoutMillis=30000
+      common.es.http.connectTimeout=1000
+      common.es.http.socketTimeout=30000
+      common.es.http.connectionRequestTimeout=500
+      #查询时的超时
+      common.es.query.timeout=5000
+      #以下为默认值，如果在api中没有设置相关值，则默认值起做用
+      common.es.query.index=none
+      common.es.query.type=_doc
+      common.es.http.aync.maxConnTotal=100
+      common.es.http.aync.maxConnPerRoute=100
+      #hosts,hostname用逗号隔开 
+      docker.host.ip.192.168.11.247=xfp-es7dot6-fat-1
+      docker.host.ip.192.168.11.246=xfp-es7dot6-fat-2
+      docker.host.ip.192.168.11.245=xfp-es7dot6-fat-3
+      middleware.version=7
   kafka:
     kafka-dev.properties: |-
       #kafka示例配置，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
@@ -148,20 +178,6 @@ userconfig:
       docker.host.ip.192.168.11.58=zk-kafka-02
       docker.host.ip.192.168.11.60=zk-kafka-03
       docker.host.ip.192.168.11.59=zk-kafka-04
-  cassandra:
-    cassandra-dev.properties: |-
-      #commons
-      common.cassandra.pool.default.contactpoint=cassandra.phoenix-t.xforceplus.com
-      common.cassandra.pool.default.port=29042
-      #注意，并不会返回准确的数据，可能稍微多或少一些
-      common.cassandra.pool.default.query.fetchSize=2000
-      #默认一致性水平为ONE ,ANY只支持写
-      common.cassandra.pool.default.query.consistencyLevel=ONE
-      #每个连接允许32请求并发。
-      common.cassandra.pool.default.pooling.maxRequestsPerConnection=32
-      #集群里的机器至少有2个连接。注意是和集群里的每个机器都至少有2个连接。
-      common.cassandra.pool.default.pooling.coreConnectionsPerHost=2
-      common.cassandra.pool.default.pooling.maxConnectionsPerHost=4
   redis:
     redis-dev.properties: |-
       #Redis配置示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
@@ -200,7 +216,21 @@ userconfig:
       common.redis.cachecloud.redis_sentinel_suffix = /cache/client/redis/sentinel/%s.json?clientVersion=
       common.redis.cachecloud.redis_standalone_suffix = /cache/client/redis/standalone/%s.json?clientVersion=
       common.redis.cachecloud.cachecloud_report_url = /cachecloud/client/reportData.json
-  
+
+  cassandra:
+    cassandra-dev.properties: |-
+      #commons
+      common.cassandra.pool.default.contactpoint=cassandra.phoenix-t.xforceplus.com
+      common.cassandra.pool.default.port=29042
+      #注意，并不会返回准确的数据，可能稍微多或少一些
+      common.cassandra.pool.default.query.fetchSize=2000
+      #默认一致性水平为ONE ,ANY只支持写
+      common.cassandra.pool.default.query.consistencyLevel=ONE
+      #每个连接允许32请求并发。
+      common.cassandra.pool.default.pooling.maxRequestsPerConnection=32
+      #集群里的机器至少有2个连接。注意是和集群里的每个机器都至少有2个连接。
+      common.cassandra.pool.default.pooling.coreConnectionsPerHost=2
+      common.cassandra.pool.default.pooling.maxConnectionsPerHost=4
 podAnnotations: {}
 
 resources:
@@ -209,7 +239,7 @@ resources:
     cpu: 200m
   limits:
     memory: 1280Mi
-    cpu:  200m
+    cpu: 200m
 livenessProbe:
   initialDelaySeconds: 30
   periodSeconds: 10
@@ -232,3 +262,7 @@ hosts:
 - {ip: 192.168.11.116, host: [node-es1]}
 - {ip: 192.168.11.117, host: [node-es2]}
 - {ip: 192.168.11.118, host: [node-es3]}
+
+- {ip: 192.168.11.247, host: [xfp-es7dot6-fat-1]}
+- {ip: 192.168.11.246, host: [xfp-es7dot6-fat-2]}
+- {ip: 192.168.11.245, host: [xfp-es7dot6-fat-3]}
