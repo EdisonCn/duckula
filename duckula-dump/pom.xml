@@ -93,7 +93,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib-dump/</classpathPrefix>
-							<mainClass>net.wicp.tams.duckula.dump.elasticsearch.MainDump</mainClass>
+							<mainClass>net.wicp.tams.duckula.dump.DumpMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

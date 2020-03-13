@@ -44,6 +44,7 @@ import net.wicp.tams.duckula.common.constant.ZkPath;
 import net.wicp.tams.duckula.ops.beans.DbInstance;
 import net.wicp.tams.duckula.ops.beans.PosShow;
 import net.wicp.tams.duckula.ops.beans.Server;
+import net.wicp.tams.duckula.ops.beans.StartK8sBean;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 
 @Slf4j
@@ -242,7 +243,7 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		List<String> locks = ZkUtil.lockIps(zkPath, taskId);// 分布式锁里的值
 		for (String lock : locks) {
 			for (Server server : findAllServers) {
-				if (lock.equals(server.getLockIp())&&!serverids.contains(server.getIp())) {
+				if (lock.equals(server.getLockIp()) && !serverids.contains(server.getIp())) {
 					serverids.add(server.getIp());
 				}
 			}
@@ -273,15 +274,15 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 	// 默认Conf.get("common.kubernetes.apiserver.namespace.default")
 	@Override
 	public Result startTaskForK8s(CommandType commandType, String taskId, boolean isAuto) {
-		Task buidlTask = QueryTask(commandType, taskId);
+		StartK8sBean startK8sBean = packageStartK8sBean(commandType, taskId);
 		boolean standalone = Conf.getBoolean("duckula.ops.starttask.standalone");
-		if (buidlTask == null) {
+		if (startK8sBean == null) {
 			return Result.getError("不支持的的类型或taskId不正确");
 		}
 		String chartsDirPath = IOUtil.mergeFolderAndFilePath(System.getenv("DUCKULA_DATA"), "/k8s/duckula_task");
 		List<Object> userList = new ArrayList<>();
 		userList.add("imageTaskTag");
-		userList.add(buidlTask.getImageVersion());
+		userList.add(startK8sBean.getImageVersion());
 		userList.add("cmd");
 		userList.add(commandType.getK8scmd());
 		userList.add("schedule");
@@ -328,12 +329,12 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		String name = idfull.length() <= 63 ? idfull : idfull.substring(0, 63);
 		// 跨名称空间部署
 		String defaultNamespace = Conf.get("common.kubernetes.apiserver.namespace.default");
-		if (!defaultNamespace.equals(buidlTask.getNamespace())) {
+		if (!defaultNamespace.equals(startK8sBean.getNamespace())) {
 			userList.add("persistence.enabled");
 			userList.add(false);
 			String poststr = Conf.get("common.kubernetes.apiserver.namespace.valuepost");
 			Object[] userConfig = userList.toArray(new Object[userList.size()]);
-			Result installDirChart = TillerClient.getInst().installDirChart(name, buidlTask.getNamespace(),
+			Result installDirChart = TillerClient.getInst().installDirChart(name, startK8sBean.getNamespace(),
 					chartsDirPath, String.format("values-%s.yaml", poststr), userConfig);
 			if (!installDirChart.isSuc()) {
 				log.error("在k8s上启动Task[{}]出错:{}", taskId, installDirChart.getMessage());
@@ -346,7 +347,7 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		}
 
 		// 设置hosts
-		Map<String, String[]> hosts = buidlTask.getMiddlewareType().getHostMap(buidlTask.getMiddlewareInst());
+		Map<String, String[]> hosts = startK8sBean.getMiddlewareType().getHostMap(startK8sBean.getMiddlewareInst());
 		if (MapUtils.isNotEmpty(hosts)) {
 			JSONArray hostAry = new JSONArray();
 			for (String ip : hosts.keySet()) {
@@ -379,7 +380,7 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		}
 		Object[] userConfig = userList.toArray(new Object[userList.size()]);
 
-		Result result = TillerClient.getInst().installDirChart(name, buidlTask.getNamespace(), chartsDirPath,
+		Result result = TillerClient.getInst().installDirChart(name, startK8sBean.getNamespace(), chartsDirPath,
 				userConfig);
 		if (!result.isSuc()) {
 			log.error("在k8s上启动Task[{}]出错:{}", taskId, result.getMessage());
@@ -391,24 +392,37 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		return result;
 	}
 
-	private Task QueryTask(CommandType commandType, String taskId) {
-		Task buidlTask = null;
+	private StartK8sBean packageStartK8sBean(CommandType commandType, String taskId) {
+		// Task buidlTask = null;
+		StartK8sBean retobj = new StartK8sBean();
 		switch (commandType) {
 		case task:
-			buidlTask = ZkUtil.buidlTask(taskId);
+			Task buidlTask = ZkUtil.buidlTask(taskId);
+			retobj.setImageVersion(buidlTask.getImageVersion());
+			retobj.setNamespace(buidlTask.getNamespace());
+			retobj.setMiddlewareType(buidlTask.getMiddlewareType());
+			retobj.setMiddlewareInst(buidlTask.getMiddlewareInst());
 			break;
 		case consumer:
 			Consumer buidlConsumer = ZkUtil.buidlConsumer(taskId);
-			buidlTask = ZkUtil.buidlTask(buidlConsumer.getTaskOnlineId());
+			Task buidlTask2 = ZkUtil.buidlTask(buidlConsumer.getTaskOnlineId());
+			retobj.setImageVersion(buidlTask2.getImageVersion());
+			retobj.setNamespace(buidlTask2.getNamespace());
+			retobj.setMiddlewareType(buidlTask2.getMiddlewareType());
+			retobj.setMiddlewareInst(buidlTask2.getMiddlewareInst());
 			break;
 		case dump:
 			Dump buidlDump = ZkUtil.buidlDump(taskId);
-			//buidlTask = ZkUtil.buidlTask(buidlDump.getTaskOnlineId());
+			retobj.setImageVersion(buidlDump.getImageVersion());
+			retobj.setNamespace(buidlDump.getNamespace());
+			retobj.setMiddlewareType(buidlDump.getMiddlewareType());
+			retobj.setMiddlewareInst(buidlDump.getMiddlewareInst());
 			break;
 		default:
+			retobj = null;
 			break;
 		}
-		return buidlTask;
+		return retobj;
 	}
 
 	// isAuto
@@ -532,11 +546,11 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 	 * @return
 	 */
 	private JSONArray packHosts(CommandType commandType, String taskId) {
-		Task buidlTask = QueryTask(commandType, taskId);
-		if (buidlTask == null) {
+		StartK8sBean startK8sBean = packageStartK8sBean(commandType, taskId);
+		if (startK8sBean == null) {
 			return null;
 		}
-		Map<String, String[]> hosts = buidlTask.getMiddlewareType().getHostMap(buidlTask.getMiddlewareInst());
+		Map<String, String[]> hosts = startK8sBean.getMiddlewareType().getHostMap(startK8sBean.getMiddlewareInst());
 		if (commandType == CommandType.consumer) {// es可能有要求
 			Consumer buidlConsumer = ZkUtil.buidlConsumer(taskId);
 			Map<String, String[]> packHosts = DuckulaUtils
@@ -545,7 +559,7 @@ public class DuckulaAssitImpl implements IDuckulaAssit {
 		}
 		if (commandType == CommandType.dump) {
 			Dump buidlDump = ZkUtil.buidlDump(taskId);
-			Map<String, String[]> hostMap =   buidlDump.getMiddlewareType().getHostMap(buidlDump.getMiddlewareInst());
+			Map<String, String[]> hostMap = buidlDump.getMiddlewareType().getHostMap(buidlDump.getMiddlewareInst());
 			hosts.putAll(hostMap);
 		}
 		if (MapUtils.isNotEmpty(hosts)) {
