@@ -126,7 +126,7 @@
 <!--							    <param>duckula-consumersender-es7</param>-->
 							</consumerSenders>
 							<env>
-								dev
+								test
 							</env>
 							<busis>
 								<param>duckula-busi-filter</param>

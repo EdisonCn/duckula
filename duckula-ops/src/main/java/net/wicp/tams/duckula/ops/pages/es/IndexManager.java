@@ -1,7 +1,22 @@
 package net.wicp.tams.duckula.ops.pages.es;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tapestry5.annotations.Property;
+import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.services.Request;
+import org.apache.tapestry5.services.RequestGlobals;
+import org.apache.tapestry5.util.TextStreamResponse;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.CollectionUtil;
@@ -26,19 +41,6 @@ import net.wicp.tams.duckula.ops.beans.DbInstance;
 import net.wicp.tams.duckula.ops.servicesBusi.IDuckulaAssit;
 import net.wicp.tams.duckula.plugin.IOps;
 import net.wicp.tams.duckula.plugin.PluginAssit;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.tapestry5.annotations.Property;
-import org.apache.tapestry5.ioc.annotations.Inject;
-import org.apache.tapestry5.services.Request;
-import org.apache.tapestry5.services.RequestGlobals;
-import org.apache.tapestry5.util.TextStreamResponse;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 @Slf4j
 public class IndexManager {
@@ -60,26 +62,12 @@ public class IndexManager {
 	 * eSClientExists; private boolean sessionExists;
 	 */
 
-	private String esVersion;
-	private IOps iOps;
-
-	private IOps getOps() {
+	private IOps getOps(String cluster) {
 		// 获取ES版本
-		Properties configMiddleware = PluginAssit.configMiddleware("es", "dev");
-		Object version = configMiddleware.get("middleware.version");
-		String currentVersion = "es" + (version == null ? "7" : version.toString());
-		// 当前版本与存储版本不一样,需要切换版本
-		if (!currentVersion.equals(esVersion)) {
-			esVersion = currentVersion;
-			iOps = OpsPlugEnum.valueOf(esVersion).newOps();
-		}
-		return iOps;
-
-//        final Task taskparam = TapestryAssist.getBeanFromPage(Task.class, requestGlobals);
-//        return taskparam.getSenderEnum().getOpsPlugEnum().newOps();
-
-//        final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
-//        return null;
+		Properties configMiddleware = PluginAssit.configMiddleware("es", cluster);
+		String esName = "es" + StringUtil.hasNull(configMiddleware.getProperty("middleware.version"), "7");
+		IOps retops = OpsPlugEnum.valueOf(esName).newOps();
+		return retops;
 	}
 
 //
@@ -113,7 +101,7 @@ public class IndexManager {
 
 		// 3.结果
 		// 3.1.获取ES的索引的昵称
-		Set<String> aliases = getOps().getAliases(cluster, indexPattern, aliasParam);
+		Set<String> aliases = getOps(cluster).getAliases(cluster, indexPattern, aliasParam);
 
 		// 3.2.获取所有的mappings
 		List<Mapping> mappings = getMappings(mappingparam, aliasParam, aliases);
@@ -129,6 +117,7 @@ public class IndexManager {
 		return TapestryAssist.getTextStreamResponse(retstr);
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<Mapping> getMappings(Mapping mappingparam, String alias, Set<String> indices) {
 		return (List<Mapping>) CollectionUtils.select(ZkUtil.findAllIndex(), object -> {
 			Mapping temp = (Mapping) object;
@@ -169,7 +158,7 @@ public class IndexManager {
 	private IConvertValue<String> getExistsMap(String cluster, String indexPattern) {
 		return index -> {
 			// 重构
-			boolean exists = getOps().isExists(cluster, indexPattern, index);
+			boolean exists = getOps(cluster).isExists(cluster, indexPattern, index);
 			return exists ? "存在" : "不存在";
 
 //            String isExit = "不存在";
@@ -185,7 +174,7 @@ public class IndexManager {
 
 	// 用于直接通过连接地址得到索引（无zk信息的索引）
 	public TextStreamResponse onQueryIndex(String cluster) {
-		String indicesJson = getOps().getIndicesJson(cluster);
+		String indicesJson = getOps(cluster).getIndicesJson(cluster);
 		return TapestryAssist.getTextStreamResponse(indicesJson);
 	}
 
@@ -228,14 +217,18 @@ public class IndexManager {
 		return TapestryAssist.getTextStreamResponse(eleJson);
 	}
 
+	public TextStreamResponse onQueryMiddlewareType(String middlewareTypeStr) {
+		return onQueryMiddlewareType(middlewareTypeStr, null);
+	}
+
 	public TextStreamResponse onQueryMiddlewareTypeAll() {
 		if (!request.getParameterNames().contains("parent")) {
 			String retlist = JSONUtil.getJsonForListSimple(null);
 			return TapestryAssist.getTextStreamResponse(retlist);
 		} else {
 			final String parentid = request.getParameter("parent");
-			final String version=request.getParameter("version");
-			return onQueryMiddlewareType(parentid,version);
+			final String version = request.getParameter("version");
+			return onQueryMiddlewareType(parentid, version);
 		}
 	}
 
@@ -243,14 +236,14 @@ public class IndexManager {
 		String oldIndex = request.getParameter("oldIndex");
 		String newIndex = request.getParameter("newIndex");
 		String[] aliases = request.getParameter("alias").split(",");
-		Result retResult = getOps().renameIndex(cluster, oldIndex, newIndex, aliases);
+		Result retResult = getOps(cluster).renameIndex(cluster, oldIndex, newIndex, aliases);
 		return TapestryAssist.getTextStreamResponse(retResult);
 	}
 
 	public TextStreamResponse onCreateIndexAlias(String cluster) {
 		String oldIndex = request.getParameter("oldIndex");
 		String[] aliases = request.getParameter("alias").split(",");
-		Result retResult = getOps().aliasCreate(cluster, oldIndex, aliases);
+		Result retResult = getOps(cluster).aliasCreate(cluster, oldIndex, aliases);
 		return TapestryAssist.getTextStreamResponse(retResult);
 	}
 
@@ -279,7 +272,7 @@ public class IndexManager {
 		}
 		String contentjson = "{}";
 		if (ArrayUtils.isNotEmpty(cols) && !"_rowkey_".equals(cols[0][0])) {// 有主键
-			contentjson = getOps().packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
+			contentjson = getOps(cluster).packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
 		}
 		return TapestryAssist.getTextStreamResponse(contentjson);
 	}
@@ -305,7 +298,7 @@ public class IndexManager {
 
 		Result createIndex = null;
 		try {
-			createIndex = getOps().createIndex(cluster, mappingId, index, type, content, shardsNum, replicas);
+			createIndex = getOps(cluster).createIndex(cluster, mappingId, index, type, content, shardsNum, replicas);
 		} catch (Exception e) {
 			return TapestryAssist.getTextStreamResponse(Result.getError(e.getMessage()));
 		}
@@ -343,7 +336,7 @@ public class IndexManager {
 				conn.close();
 			} catch (Exception e) {
 			}
-			String contentjson = getOps().packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
+			String contentjson = getOps(cluster).packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
 			mappingparam.setContent(contentjson);
 		}
 		return mappingparam;

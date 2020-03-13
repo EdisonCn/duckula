@@ -313,7 +313,17 @@
      }
      
      
-     function saveCheck(formdata){      
+     function saveCheck(formdata){   
+       var sendClassSel=  $('#senderConsumerEnum_save').combobox('getValue');
+       if(sendClassSel=='jdbc'||sendClassSel=='no'){
+            return true;
+       }else{
+           var middlewareInstSel=  $('#middlewareInst_save').combobox('getValue');
+           if(middlewareInstSel==''){
+              $.rjzjh.alert('需要设置"中间件实例"');
+              return false;
+           }
+       }  
        return true;
      }
      

@@ -282,8 +282,8 @@ public class ConsumerManager {
         }
         if (ops != null) {
             Task taskparam = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
-            List<Rule> rules = ops.createIndex(taskparam.getRules(), taskparam.getMiddlewareInst(),
-                    taskparam.getIp(), taskparam.getPort(), taskparam.getUser(), taskparam.getPwd());
+        	 List<Rule> rules = ops.createIndex(consumerparam.getRules(), consumerparam.getMiddlewareInst(),
+            		taskparam.getIp(), taskparam.getPort(), taskparam.getUser(), taskparam.getPwd());
             saveToZk(ops, rules, taskparam);
         }
 
@@ -294,11 +294,11 @@ public class ConsumerManager {
         return req.retSuccInfo("保存consumer成功");
     }
 
-    private void saveToZk(IOps ops, List<Rule> rules, Task taskparam) {
+    private void saveToZk(IOps ops, List<Rule> rules,Task taskparam) {
         if (CollectionUtils.isEmpty(rules)) {
             return;
         }
-        for (Rule rule : taskparam.getRuleList()) {
+        for (Rule rule : rules) {
             String db = rule.getDbPattern().replaceAll("\\^", "").replaceAll("\\$", "")
                     .replaceAll("\\[0-9\\]\\*", "");
             String tb = rule.getTbPattern().replaceAll("\\^", "").replaceAll("\\$", "")
