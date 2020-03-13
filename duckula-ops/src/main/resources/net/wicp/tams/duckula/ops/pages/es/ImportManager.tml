@@ -161,6 +161,7 @@
    <r:dialogtree id="server_dialog" treeLoadUrl="/duckula/taskManager:QueryTree" title="指派服务器" width="600" sucHandle="doSuc" checkHandle="doCheck"></r:dialogtree>
 <script>
      var needServer=${needServer};
+     var namespace='${namespace}';
      function showopt(value,row,index){
             var optCan=gt( row.hostNum,0);
             var k8sCan=!(""==row.podStatus);//Pending
@@ -264,7 +265,7 @@
      }
      
     function initUpdate(){
-       $('#namespace_save').val('${defaultNamespace}');
+      // $('#namespace_save').val('${defaultNamespace}');
        syncRule();
     }
      
@@ -364,6 +365,13 @@
 				onDestroy: updateRuleInput,
 				onAfterEdit: updateRuleInput
       });
+     if(namespace!=''){
+         if("all"==namespace){
+            $('#namespace_save').validatebox('readonly',false);
+         }else{
+            $('#namespace_save').validatebox('readonly',true);
+         }
+      }
      
      $('#middlewareInst_save').combobox({
 			onBeforeLoad: function(param){
