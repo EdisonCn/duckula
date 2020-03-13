@@ -237,8 +237,18 @@
      }
      
 
-     function saveCheck(formdata){          
-        return true;
+     function saveCheck(formdata){   
+       var sendClassSel=  $('#dumpEnum_save').combobox('getValue');
+       if(sendClassSel=='mysql'||sendClassSel=='no'){
+            return true;
+       }else{
+           var middlewareInstSel=  $('#middlewareInst_save').combobox('getValue');
+           if(middlewareInstSel==''){
+              $.rjzjh.alert('需要设置"中间件实例"');
+              return false;
+           }
+       }  
+       return true;
      }
      
      function getRow(index){

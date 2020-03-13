@@ -63,7 +63,7 @@
 		<common.es.client.version>7.6.0</common.es.client.version>
 		<common.kubernetes.version>3.6.7</common.kubernetes.version>
 		<common.cassandra.version>3.6.7</common.cassandra.version>
-		<common.binlog.alone.version>3.6.10</common.binlog.alone.version>
+		<common.binlog.alone.version>3.6.11</common.binlog.alone.version>
 		<common.flink.source.binlog.version>3.6.6</common.flink.source.binlog.version>
 		<common.flink.sink.influxdb.version>3.6.6</common.flink.sink.influxdb.version>
 		<common.spring.autoconfig.version>3.6.5</common.spring.autoconfig.version>
