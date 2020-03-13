@@ -87,6 +87,7 @@ userconfig:
       common.es.query.type=_doc
       common.es.http.aync.maxConnTotal=100
       common.es.http.aync.maxConnPerRoute=100
+      middleware.version=6
     es-seller.properties: |-
       #此配置为示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
       common.es.host.name=seller-node-es1,seller-node-es2,seller-node-es3,seller-node-es4,seller-node-es5
@@ -110,7 +111,8 @@ userconfig:
       common.es.query.index=null
       common.es.query.type=_doc
       common.es.http.aync.maxConnTotal=100
-      common.es.http.aync.maxConnPerRoute=100      
+      common.es.http.aync.maxConnPerRoute=100
+      middleware.version=6  
   kafka:
     kafka-dev.properties: |-
       #kafka示例配置，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
