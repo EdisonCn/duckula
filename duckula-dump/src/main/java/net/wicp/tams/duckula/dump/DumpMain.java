@@ -83,6 +83,20 @@ public class DumpMain {
 			String pluginDri = IOUtil.mergeFolderAndFilePath(rootDir.getPath(), dumpEnum.getPluginJar());
 			props.put("common.binlog.alone.dump.global.busiPluginDir", pluginDri);
 		}
+		// 线程数处理
+		if (dump.getBaseDataNum() != null) {
+			props.put("common.binlog.alone.dump.thread.baseDataNum", String.valueOf(dump.getBaseDataNum()));
+		}
+		if (dump.getBusiNum() != null) {
+			props.put("common.binlog.alone.dump.thread.busiNum", String.valueOf(dump.getBusiNum()));
+		}
+		if (dump.getSendNum() != null) {
+			props.put("common.binlog.alone.dump.thread.sendNum", String.valueOf(dump.getSendNum()));
+		}
+		log.info("-----baseDataNum={},busiNum={},sendNum={}----------------------------",
+				props.get("common.binlog.alone.dump.thread.baseDataNum"),
+				props.get("common.binlog.alone.dump.thread.busiNum"),
+				props.get("common.binlog.alone.dump.thread.sendNum"));
 		Conf.overProp(props);
 		log.info("----------------------处理原文件配置-------------------------------------");
 		Properties newprops = Conf.replacePre("common.binlog.alone.dump.global.pool",
