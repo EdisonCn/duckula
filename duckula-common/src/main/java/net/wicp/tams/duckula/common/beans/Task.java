@@ -4,21 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.constant.dic.YesOrNo;
-import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.constant.BusiEnum;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
 import net.wicp.tams.duckula.common.constant.SenderEnum;
 import net.wicp.tams.duckula.common.constant.SerializerEnum;
 import net.wicp.tams.duckula.plugin.beans.Rule;
-import net.wicp.tams.duckula.plugin.constant.RuleItem;
 
 /***
  * 表
@@ -35,24 +30,23 @@ public class Task {
 	private int port;
 	private String dbinst;// 数据库实例名//只用于位点历史更新的挂存目录用，不做其它使用
 	private YesOrNo rds = YesOrNo.yes;// yes表示是rds
-	private YesOrNo isSsh = YesOrNo.no; //no表示不启用ssh
-	private YesOrNo posListener = YesOrNo.yes; //yes表示需要启用位点上传
+	private YesOrNo isSsh = YesOrNo.no; // no表示不启用ssh
+	private YesOrNo posListener = YesOrNo.yes; // yes表示需要启用位点上传
 	private String user;
 	private String pwd;
 	private String defaultDb;
-	private String imageVersion=Conf.get("duckula.task.image.tag"); //task的image版本
-	private String namespace=Conf.get("common.kubernetes.apiserver.namespace.default"); //k8s的命名空间
-	
-	
+	private String imageVersion = Conf.get("duckula.task.image.tag"); // task的image版本
+	private String namespace = Conf.get("common.kubernetes.apiserver.namespace.default"); // k8s的命名空间
+
 	public String getImageVersion() {
-		return StringUtil.isNull(this.imageVersion)?Conf.get("duckula.task.image.tag"):this.imageVersion;
+		return StringUtil.isNull(this.imageVersion) ? Conf.get("duckula.task.image.tag") : this.imageVersion;
 	}
-	
+
 	public String getNamespace() {
-		return StringUtil.isNull(this.namespace)?Conf.get("common.kubernetes.apiserver.namespace.default"):this.namespace;
+		return StringUtil.isNull(this.namespace) ? Conf.get("common.kubernetes.apiserver.namespace.default")
+				: this.namespace;
 	}
-	
-	
+
 	private String rules;// 规则：demo`user`{'key':'aaa:%s'} eg:
 							// demo,policy_0000,id,demo_policy|demo,sdk_info_0000,id,demo_policy
 	private String beginTime;// 任务支持binlog的时间,默认为创建任务时的时间
@@ -71,13 +65,12 @@ public class Task {
 	private String busiPluginDir;
 	private Map<String, String> params;
 	private String remark;
-	private int threadNum=1;// 线程数，对于kafka将不起作用
+	private int threadNum = 1;// 线程数，对于kafka将不起作用
 	private int queueSize;// 循环队列大小
-	
-	private MiddlewareType middlewareType;//中间件类型
-	
-	private String middlewareInst;//中间件配置
-	
+
+	private MiddlewareType middlewareType;// 中间件类型
+
+	private String middlewareInst;// 中间件配置
 
 	public String getReceivePluginDir() {
 		if (senderEnum == SenderEnum.no) {
@@ -88,9 +81,9 @@ public class Task {
 	}
 
 	public String getBusiDowithPluginDir() {
-		if(busiEnum==null) {
+		if (busiEnum == null) {
 			return "";
-		}else if (busiEnum == BusiEnum.custom) {
+		} else if (busiEnum == BusiEnum.custom) {
 			return this.busiPluginDir;
 		} else {
 			return busiEnum.getPluginJar();
@@ -99,62 +92,8 @@ public class Task {
 
 	public void setRules(String rules) {
 		this.rules = rules;
-		if (StringUtil.isNull(rules)) {
-			return;
-		}
-		ruleList.clear();
-		String[] ruleAry = rules.split("&");
-		for (int i = 0; i < ruleAry.length; i++) {
-			String[] ruleValues = ruleAry[i].split("`");
-			if (ruleValues.length == 0 || (ruleValues.length != 3 && ruleValues.length != 4)) {
-				throw new IllegalArgumentException("规则长度只能为3或4!");
-			}
-			Rule rule = new Rule();
-			
-			String itemStr=ruleValues[2];
-			boolean isdrds=false;
-			if(ruleValues.length>3) {
-				rule.setDrds(ruleValues[2]);
-				itemStr=ruleValues[3];
-				isdrds=true;
-			}
-			if(isdrds) {
-				rule.setDbPattern(String.format(ConfUtil.drdsTbPatternFormat2, ruleValues[0]));//drds支持
-			}else {
-				rule.setDbPattern(buildPatter(ruleValues[0]));
-			}
-			
-			String dbpatternstr=buildPatter(ruleValues[1]);
-			if(isdrds) {
-				if("dbtb".equals(rule.getDrds())) {
-					dbpatternstr=String.format(ConfUtil.drdsTbPatternFormat2, ruleValues[1]);//drds支持
-				}else if("db".equals(rule.getDrds())){
-					dbpatternstr=String.format(ConfUtil.drdsTbPatternFormat1, ruleValues[1]);//drds支持
-				}else if("no".equals(rule.getDrds())){
-					dbpatternstr=ruleValues[1];
-				}
-			}
-			rule.setTbPattern(dbpatternstr);
-			
-			JSONObject json = JSON.parseObject(itemStr);
-			for (String key : json.keySet()) {
-				RuleItem tempItem = RuleItem.get(key);
-				if (tempItem == null) {
-					log.error("规则设置出错，请检查key与发送者!");
-					throw new IllegalArgumentException("规则设置出错，请检查key与发送者!");
-				} else {
-					rule.getItems().put(tempItem, json.getString(key));
-				}
-			}
-			ruleList.add(rule);
-		}
-	}
-
-	private String buildPatter(String patter) {
-		if (patter.endsWith("_")) {
-			return String.format("^%s[0-9]*$", patter);
-		} else {
-			return String.format("^%s$", patter);
-		}
+		this.ruleList.clear();
+		List<Rule> buildRules = Rule.buildRules(rules);
+		this.ruleList.addAll(buildRules);
 	}
 }

@@ -52,8 +52,9 @@ public class Es6ConsumerSender extends ConsumerSenderAbs<Builder> {
         if (!relaMapToEs.containsKey(key)) {
             ESClient esClient = EsClientThreadlocal.createPerThreadEsClient();
             Map<String, Propertie> queryMapping_tc_all = esClient.queryMapping_tc_all(index, type);
-            if (queryMapping_tc_all.containsKey(Conf.get("common.es.assit.rela.key"))) {
-                JSONObject relations = queryMapping_tc_all.get(Conf.get("common.es.assit.rela.key")).getRelations();
+            String relationKey = StringUtil.hasNull(Conf.get("common.es.assit.rela.key"),"tams_relations");
+            if (queryMapping_tc_all.containsKey(relationKey)) {
+                JSONObject relations = queryMapping_tc_all.get(relationKey).getRelations();
                 relaMapToEs.put(key, relations);
             } else {
                 relaMapToEs.put(key, null);
@@ -68,13 +69,14 @@ public class Es6ConsumerSender extends ConsumerSenderAbs<Builder> {
         esDataBuilder.setAction(duckulaEvent.getOptType() == OptType.delete ? Action.delete : Action.update);
         EsObj.Builder esObjBuilder = EsObj.newBuilder();
         esObjBuilder.putAllSource(datamap);
-        boolean isroot = MappingBean.isRoot(relaJson, duckulaEvent.getTb());
+        boolean isroot = MappingBean.isRoot(relaJson, duckulaEvent.getTb(),rule.getTbLength());
         if (isroot) {// 根元素或是没有关联关联的索引
             String keyColName = rule.getItems().get(RuleItem.key);
             String idStr = DuckulaAssit.getValueStr(duckulaEvent, keyColName);
             esObjBuilder.setId(idStr);
             if (relaJson != null) {
-                esObjBuilder.setRelaValue(RelaValue.newBuilder().setName(duckulaEvent.getTb()));// tams_relations
+            	String tableNameTrue = (duckulaEvent.getTb().length() >= rule.getTbLength()) ? duckulaEvent.getTb().substring(0, rule.getTbLength()) : duckulaEvent.getTb();
+                esObjBuilder.setRelaValue(RelaValue.newBuilder().setName(tableNameTrue));// tams_relations
             }
             esDataBuilder.addDatas(esObjBuilder);
         } else {// 有关联关系且不是根元素
@@ -98,9 +100,9 @@ public class Es6ConsumerSender extends ConsumerSenderAbs<Builder> {
                 keyName = duckulaEvent.getCols(0);
             }
 
-            String relaName = MappingBean.getRelaName(relaJson, duckulaEvent.getTb());
+            String relaName = MappingBean.getRelaName(relaJson, duckulaEvent.getTb(),rule.getTbLength());
             String[] relaNameAry = relaName.split(":");
-            String parentId = DuckulaAssit.getValueStr(duckulaEvent, relaNameAry[1]);
+            String parentId =  datamap.get(relaNameAry[1]);//DuckulaAssit.getValueStr(duckulaEvent, relaNameAry[1]);
             // 找id
             String idstr = DuckulaAssit.getValueStr(duckulaEvent, duckulaEvent.getCols(0));// TODO 子表暂时使用第一个字段， 后续需要改为配置
             // String idstr = DuckulaAssit.getValueStr(duckulaEvent, keyName);

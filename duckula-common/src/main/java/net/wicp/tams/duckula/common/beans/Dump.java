@@ -49,40 +49,9 @@ public class Dump {
 
 	public void setRules(String rules) {
 		this.rules = rules;
-		if (StringUtil.isNull(rules)) {
-			return;
-		}
-		ruleList.clear();
-		String[] ruleAry = rules.split("&");
-		for (int i = 0; i < ruleAry.length; i++) {
-			String[] ruleValues = ruleAry[i].split("`");
-			if (ruleValues.length == 0 || ruleValues.length != 3) {
-				throw new IllegalArgumentException("规则长度只能为３!");
-			}
-			Rule rule = new Rule();
-			rule.setDbPattern(buildPatter(ruleValues[0]));
-			rule.setTbPattern(buildPatter(ruleValues[1]));
-			JSONObject json = JSON.parseObject(ruleValues[2]);
-			for (String key : json.keySet()) {
-				RuleItem tempItem = RuleItem.get(key);
-				if (tempItem == null) {
-					log.error("规则设置出错，请检查【{}】是否在net.wicp.tams.duckula.plugin.constant.RuleItem中定义!", key);
-					throw new IllegalArgumentException(
-							"规则设置出错，请检查【" + key + "】是否在net.wicp.tams.duckula.plugin.constant.RuleItem中定义!");
-				} else {
-					rule.getItems().put(tempItem, json.getString(key));
-				}
-			}
-			ruleList.add(rule);
-		}
-	}
-
-	private String buildPatter(String patter) {
-		if (patter.endsWith("_")) {
-			return String.format("^%s[0-9]*$", patter);
-		} else {
-			return String.format("^%s$", patter);
-		}
+		this.ruleList.clear();
+		List<Rule> buildRules = Rule.buildRules(rules);
+		this.ruleList.addAll(buildRules);
 	}
 
 	/*

@@ -121,6 +121,8 @@
 					            <tr>
 					                <th field="db" width="15%" editor="{type:'validatebox',options:{required:true}}">库名模式</th>
 					                <th field="tb" width="30%" editor="{type:'validatebox',options:{required:true}}">表名模式</th>
+					                <th field="drds" width="13%" editor="{type:'combobox',options:{required:false,valueField:'value',textField:'label',panelHeight:80,data:[{label:'分库也分表',value:'dbtb'},{label:'只分库',value:'db'},{label:'不分库分表',value:'no'}]}}">drds分表模式</th>
+					                
 					                <th field="topic" width="20%" editor="{type:'validatebox',options:{required:false}}">消息主题</th>
 					                <th field="key" width="15%" editor="{type:'validatebox',options:{required:false}}">主键</th>
 					                <th field="relakey" width="12%" editor="{type:'validatebox',options:{required:false}}">关联字段</th>

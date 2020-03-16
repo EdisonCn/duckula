@@ -123,15 +123,17 @@ public class Es6Dumper implements IBusiSender<DumpEvent> {
 				}
 				// 关联关系支持 20181201
 				String tablename = dataBuilders.getDump().getTb();
-				boolean isroot = MappingBean.isRoot(relaObjMap.get(curRule), tablename);
-				if (isroot) {// 根元素或是没有关联关联的索引
+				
+				boolean isroot = MappingBean.isRoot(relaObjMap.get(curRule), tablename,curRule.getTbLength());
+	            if (isroot) {// 根元素或是没有关联关联的索引
 					esObjBuilder.setId(idstr);
 					if (relaObjMap.get(curRule) != null && !relaObjMap.get(curRule).isEmpty()) {
-						esObjBuilder.setRelaValue(RelaValue.newBuilder().setName(tablename));// tams_relations
+						String tableNameTrue = (tablename.length() >= curRule.getTbLength()) ? tablename.substring(0, curRule.getTbLength()) : tablename;
+	                    esObjBuilder.setRelaValue(RelaValue.newBuilder().setName(tablename));// tams_relations
 					}
 				} else {// 有关联关系且不是根元素
-					String relaName = MappingBean.getRelaName(relaObjMap.get(curRule), tablename);
-					String[] relaNameAry = relaName.split(":");
+					String relaName = MappingBean.getRelaName(relaObjMap.get(curRule), tablename,curRule.getTbLength());
+                    String[] relaNameAry = relaName.split(":");
 					String parentId = datamap.get(relaNameAry[1]);
 					esObjBuilder.setId(String.format("%s:%s", tablename, idstr));// 有可能与主表id相同把主表的ID冲掉
 					if (StringUtils.isBlank(parentId)) {// 关联关系没有parent
