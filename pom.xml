@@ -72,7 +72,7 @@
 		<!-- 与parent不同 -->
 		<log4j.version>2.6.2</log4j.version>
 		<!-- dev版本 -->
-		<duckula.version>2.0.5</duckula.version>
+		<duckula.version>2.0.6</duckula.version>
 		<!-- 与cassandra 3.7.2版本相配 -->
 		<metrics.version>3.2.2</metrics.version>
 	</properties>
