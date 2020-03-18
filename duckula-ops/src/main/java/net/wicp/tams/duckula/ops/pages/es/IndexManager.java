@@ -247,7 +247,7 @@ public class IndexManager {
 		return TapestryAssist.getTextStreamResponse(retResult);
 	}
 
-	public TextStreamResponse onCreateIndex() {
+	public TextStreamResponse onCreateIndex(String paramCluster) {
 		// String requestPayload =
 		// J2EEAssist.getRequestPayload(requestGlobals.getHTTPServletRequest());///////////////////////////////////////////////zjh
 		// System.out.println(requestPayload);
@@ -272,7 +272,7 @@ public class IndexManager {
 		}
 		String contentjson = "{}";
 		if (ArrayUtils.isNotEmpty(cols) && !"_rowkey_".equals(cols[0][0])) {// 有主键
-			contentjson = getOps(cluster).packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
+			contentjson = getOps(paramCluster).packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
 		}
 		return TapestryAssist.getTextStreamResponse(contentjson);
 	}
