@@ -117,7 +117,7 @@ public class BusiPluginManager {
 			@Override
 			public String getStr(Object keyObj) {
 				BusiPlugin opsPlug = (BusiPlugin) keyObj;
-				if (!tempmap.get(opsPlug.getPluginType()).contains(opsPlug.getPluginFileName())) {
+				if (opsPlug.getPluginType()==null||!tempmap.get(opsPlug.getPluginType()).contains(opsPlug.getPluginFileName())) {
 					return "否";
 				} else {
 					return "是";
@@ -204,7 +204,7 @@ public class BusiPluginManager {
 			};
 
 			retstr = EasyUiAssist.getJsonForGrid(retlist,
-					new String[] { "id", "projectName", "pluginType", "pluginType", "update", "lastUpdateTime",
+					new String[] { "id", "projectName", "pluginType", "update", "lastUpdateTime",
 							"pluginFileName", ",fileExit", ",fileExitServer", "pluginType,pluginType1" },
 					new IConvertValue[] { null, null, null, null, null, null, fileExit, fileExitServer,
 							new ConvertValueEnum(PluginType.class) },
@@ -239,6 +239,9 @@ public class BusiPluginManager {
 					// String ret = "0";// -1:有异常，需要处理 0：不存在 1:存在但需要更新 2:存在无需更新
 					List<S3ObjectSummary> list = serverplugs.get(opsPlug.getPluginType());
 					boolean isExit = false;
+					if(opsPlug.getPluginType()==null) {
+						return "-1";
+					}
 					for (S3ObjectSummary s3ObjectSummary : list) {
 						if (s3ObjectSummary.getKey().startsWith(opsPlug.getPluginType().getPluginDirKey())) {
 							try {
