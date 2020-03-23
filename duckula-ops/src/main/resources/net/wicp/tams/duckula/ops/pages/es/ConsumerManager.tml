@@ -45,7 +45,7 @@
 	                 </td>	
 	                   <td class="frame_table_list_2_righttext">在线任务</td>
 			         <td>
-			          <r:combogrid id="taskSel" name="taskOnlineId"  columns="[[{field:'id',width:110,title:'id'},{field:'ip',width:280,title:'ip'},{field:'senderEnum',width:60,title:'发送者'}]]" idfield="id" panelWidth="460" panelHeight="300" textfield="id" width="200" pagination="false" required="true" url="/duckula/binlogDownload:queryTasks?namespace=${namespace}"></r:combogrid>
+			          <r:combogrid id="taskSel" name="taskOnlineId"  columns="[[{field:'id',width:110,title:'id'},{field:'ip',width:280,title:'ip'},{field:'senderEnum',width:60,title:'接收者'}]]" idfield="id" panelWidth="460" panelHeight="300" textfield="id" width="200" pagination="false" required="true" url="/duckula/binlogDownload:queryTasks?namespace=${namespace}"></r:combogrid>
 			         </td>			        
 			      </tr>
 			      <tr>
@@ -85,7 +85,7 @@
 			         <td>
 			             <r:combogrid id="busiPluginSel" name="busiPlugin"  columns="[[{field:'id',width:100,title:'id'},{field:'projectName',width:250,title:'项目名称'},{field:'update',width:100,title:'上传人'},{field:'lastUpdateTime',width:150,title:'上传时间'},{field:'pluginFileName',width:250,title:'插件文件名'},{field:'fileExit',width:100,title:'ops存在'},{field:'fileExitServer',width:100,title:'同步状态'}]]" idfield="pluginFileName" panelWidth="1100" panelHeight="300" textfield="pluginFileName" width="280" pagination="false" url="/es/busiPluginManager:query"></r:combogrid>
 	                 </td>
-	                 <td class="frame_table_list_2_righttext" name="trdb">发送者</td>
+	                 <td class="frame_table_list_2_righttext" name="trdb">接收者</td>
 			         <td>
 			             <r:comboboxenum id="senderConsumerEnum_save"  name="senderConsumerEnum" enumClass="net.wicp.tams.duckula.common.beans.SenderConsumerEnum" required="true" changeHandle="changeSender"></r:comboboxenum>
 			         </td>
@@ -350,12 +350,12 @@
 				   for (var row of dgdata.rows) {
 					  if(sendClassSel==='es6' || sendClassSel=='es7'){
 			               if(row.index==''||row.key==''){
-				               $.rjzjh.alert('es发送类型需要设置索引、主键');
+				               $.rjzjh.alert('es接收类型需要设置索引、主键');
 				               return false;
 				           }
 			           }else if(sendClassSel=='redis'){
 			               if(row.key==''||lt(row.key.indexOf('%s'),0)){
-				               $.rjzjh.alert('redis发送类型需要设置主键且含有"%s"');
+				               $.rjzjh.alert('redis接收类型需要设置主键且含有"%s"');
 				               return false;
 				           }
 			           }			           
