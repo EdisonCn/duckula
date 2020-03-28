@@ -52,215 +52,217 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@HtmlJs(easyuiadd = {EasyUIAdd.edatagrid})
+@HtmlJs(easyuiadd = { EasyUIAdd.edatagrid })
 public class ConsumerManager {
-    @Inject
-    protected RequestGlobals requestGlobals;
+	@Inject
+	protected RequestGlobals requestGlobals;
 
-    @Inject
-    protected Request request;
+	@Inject
+	protected Request request;
 
-    @Inject
-    private IReq req;
-    @Inject
-    private IDuckulaAssit duckulaAssit;
+	@Inject
+	private IReq req;
+	@Inject
+	private IDuckulaAssit duckulaAssit;
 
-    @SessionState
-    @Property
-    private String namespace;
+	@SessionState
+	@Property
+	private String namespace;
 
-    private boolean namespaceExists;
+	private boolean namespaceExists;
 
-    public boolean isNeedServer() {
-        return TaskPattern.isNeedServer();
-    }
+	public boolean isNeedServer() {
+		return TaskPattern.isNeedServer();
+	}
 
-    public String getColDifferent() {
-        if (isNeedServer()) {
-            return "{field:'hosts',width:100,title:'任务主机'}";
-        } else {
-            return "{field:'podStatus',width:120,title:'k8s状态'},{field:'imageVersion',width:80,title:'image版本'},{field:'namespace',width:100,title:'名称空间'}";
-        }
-    }
+	public String getColDifferent() {
+		if (isNeedServer()) {
+			return "{field:'hosts',width:100,title:'任务主机'}";
+		} else {
+			return "{field:'podStatus',width:120,title:'k8s状态'},{field:'imageVersion',width:80,title:'image版本'},{field:'namespace',width:100,title:'名称空间'}";
+		}
+	}
 
-    @SuppressWarnings("unchecked")
-    public TextStreamResponse onQuery() {
-        final Consumer consumerparam = TapestryAssist.getBeanFromPage(Consumer.class, requestGlobals);
-        if (!namespaceExists) {
-            String jsonStr = EasyUiAssist.getJsonForGridEmpty();
-            return TapestryAssist.getTextStreamResponse(jsonStr);
-        }
+	@SuppressWarnings("unchecked")
+	public TextStreamResponse onQuery() {
+		final Consumer consumerparam = TapestryAssist.getBeanFromPage(Consumer.class, requestGlobals);
+		if (!namespaceExists) {
+			String jsonStr = EasyUiAssist.getJsonForGridEmpty();
+			return TapestryAssist.getTextStreamResponse(jsonStr);
+		}
 
-        List<String> fitTasks = DuckulaUtils.findTaskIdByNamespace(namespace);
+		List<String> fitTasks = DuckulaUtils.findTaskIdByNamespace(namespace);
 
-        List<Consumer> consumers = ZkUtil.findAllObjs(ZkPath.consumers, Consumer.class);
-        List<Consumer> retlist = (List<Consumer>) CollectionUtils.select(consumers, new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                Consumer temp = (Consumer) object;
-                if (!fitTasks.contains(temp.getTaskOnlineId())) {
-                    return false;
-                }
-                boolean ret = true;
-                if (StringUtil.isNotNull(consumerparam.getTopic())) {
-                    ret = temp.getTopic().indexOf(consumerparam.getTopic()) >= 0;
-                    if (!ret) {
-                        return false;
-                    }
-                }
-                return ret;
-            }
-        });
+		List<Consumer> consumers = ZkUtil.findAllObjs(ZkPath.consumers, Consumer.class);
+		List<Consumer> retlist = (List<Consumer>) CollectionUtils.select(consumers, new Predicate() {
+			@Override
+			public boolean evaluate(Object object) {
+				Consumer temp = (Consumer) object;
+				if (!fitTasks.contains(temp.getTaskOnlineId())) {
+					return false;
+				}
+				boolean ret = true;
+				if (StringUtil.isNotNull(consumerparam.getTopic())) {
+					ret = temp.getTopic().indexOf(consumerparam.getTopic()) >= 0;
+					if (!ret) {
+						return false;
+					}
+				}
+				return ret;
+			}
+		});
 
-        CollectionUtils.filter(retlist, new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                return object != null && StringUtil.isNotNull(((Consumer) object).getId());
-            }
-        });
+		CollectionUtils.filter(retlist, new Predicate() {
+			@Override
+			public boolean evaluate(Object object) {
+				return object != null && StringUtil.isNotNull(((Consumer) object).getId());
+			}
+		});
 
-        String retstr = null;
-        if (isNeedServer()) {
-            final Map<String, List<String>> taskRunServerMap = new HashMap<>();
-            List<Server> findAllServers = duckulaAssit.findAllServers();
-            for (Consumer consumer : retlist) {
-                List<String> serverids = duckulaAssit.lockToServer(findAllServers, ZkPath.consumers, consumer.getId());
-                taskRunServerMap.put(consumer.getId(), serverids);
-            }
-            IConvertValue<String> hostNumConvert = new IConvertValue<String>() {
-                @Override
-                public String getStr(String keyObj) {
-                    return String.valueOf(taskRunServerMap.get(keyObj).size());
-                }
-            };
+		String retstr = null;
+		if (isNeedServer()) {
+			final Map<String, List<String>> taskRunServerMap = new HashMap<>();
+			List<Server> findAllServers = duckulaAssit.findAllServers();
+			for (Consumer consumer : retlist) {
+				List<String> serverids = duckulaAssit.lockToServer(findAllServers, ZkPath.consumers, consumer.getId());
+				taskRunServerMap.put(consumer.getId(), serverids);
+			}
+			IConvertValue<String> hostNumConvert = new IConvertValue<String>() {
+				@Override
+				public String getStr(String keyObj) {
+					return String.valueOf(taskRunServerMap.get(keyObj).size());
+				}
+			};
 
-            IConvertValue<String> hostNumList = new IConvertValue<String>() {
-                @Override
-                public String getStr(String keyObj) {
-                    return CollectionUtil.listJoin(taskRunServerMap.get(keyObj), ",");
-                }
-            };
+			IConvertValue<String> hostNumList = new IConvertValue<String>() {
+				@Override
+				public String getStr(String keyObj) {
+					return CollectionUtil.listJoin(taskRunServerMap.get(keyObj), ",");
+				}
+			};
 
-            Map<String, IConvertValue<String>> convertsMap = new HashMap<>();
-            convertsMap.put("hostNum", hostNumConvert);
-            convertsMap.put("hosts", hostNumList);
-            retstr = EasyUiAssist.getJsonForGridAlias(retlist, new String[]{"id,hostNum", "id,hosts"}, convertsMap,
-                    retlist.size());// .getJsonForGridAlias(retlist, retlist.size());
-        } else {
-            IConvertValue<String> podStatus = new IConvertValue<String>() {
-                @Override
-                public String getStr(String keyObj) {
-                    try {
-                        keyObj = CommandType.consumer.getK8sId(keyObj);
-                        Map<ResourcesType, String> queryStatus = TillerClient.getInst().queryStatus(keyObj);
-                        String valueStr = queryStatus.get(ResourcesType.Pod);
-                        String colValue = ResourcesType.Pod.getColValue(valueStr, "STATUS");
-                        return colValue;
-                    } catch (Exception e) {
-                        log.error("query Pod status error", e);
-                        return "";
-                    }
-                }
-            };
+			Map<String, IConvertValue<String>> convertsMap = new HashMap<>();
+			convertsMap.put("hostNum", hostNumConvert);
+			convertsMap.put("hosts", hostNumList);
+			retstr = EasyUiAssist.getJsonForGridAlias(retlist, new String[] { "id,hostNum", "id,hosts" }, convertsMap,
+					retlist.size());// .getJsonForGridAlias(retlist, retlist.size());
+		} else {
+			IConvertValue<String> podStatus = new IConvertValue<String>() {
+				@Override
+				public String getStr(String keyObj) {
+					try {
+						keyObj = CommandType.consumer.getK8sId(keyObj);
+						Map<ResourcesType, String> queryStatus = TillerClient.getInst().queryStatus(keyObj);
+						String valueStr = queryStatus.get(ResourcesType.Pod);
+						String colValue = ResourcesType.Pod.getColValue(valueStr, "STATUS");
+						return colValue;
+					} catch (Exception e) {
+						log.error("query Pod status error", e);
+						return "";
+					}
+				}
+			};
 
-            IConvertValue<String> imageVersionConv = new IConvertValue<String>() {
-                @Override
-                public String getStr(String taskOnlineId) {
-                    Task buidlTask = ZkUtil.buidlTask(taskOnlineId);
-                    if (buidlTask == null) {
-                        return "找不到关联的task";
-                    } else {
-                        return buidlTask.getImageVersion();
-                    }
-                }
-            };
+			IConvertValue<String> imageVersionConv = new IConvertValue<String>() {
+				@Override
+				public String getStr(String taskOnlineId) {
+					Task buidlTask = ZkUtil.buidlTask(taskOnlineId);
+					if (buidlTask == null) {
+						return "找不到关联的task";
+					} else {
+						return buidlTask.getImageVersion();
+					}
+				}
+			};
 
-            IConvertValue<String> namespaceConv = new IConvertValue<String>() {
-                @Override
-                public String getStr(String taskOnlineId) {
-                    Task buidlTask = ZkUtil.buidlTask(taskOnlineId);
-                    if (buidlTask == null) {
-                        return "找不到关联的task";
-                    } else {
-                        return buidlTask.getNamespace();
-                    }
-                }
-            };
-            Map<String, IConvertValue<String>> convertsMap = new HashMap<>();
-            convertsMap.put("podStatus", podStatus);
-            convertsMap.put("imageVersion", imageVersionConv);
-            convertsMap.put("namespace", namespaceConv);
-            retstr = EasyUiAssist.getJsonForGridAlias(retlist,
-                    new String[]{"id,podStatus", "taskOnlineId,imageVersion", "taskOnlineId,namespace"}, convertsMap,
-                    retlist.size());// .getJsonForGridAlias(retlist, retlist.size());
-        }
-        return TapestryAssist.getTextStreamResponse(retstr);
-    }
+			IConvertValue<String> namespaceConv = new IConvertValue<String>() {
+				@Override
+				public String getStr(String taskOnlineId) {
+					Task buidlTask = ZkUtil.buidlTask(taskOnlineId);
+					if (buidlTask == null) {
+						return "找不到关联的task";
+					} else {
+						return buidlTask.getNamespace();
+					}
+				}
+			};
+			Map<String, IConvertValue<String>> convertsMap = new HashMap<>();
+			convertsMap.put("podStatus", podStatus);
+			convertsMap.put("imageVersion", imageVersionConv);
+			convertsMap.put("namespace", namespaceConv);
+			retstr = EasyUiAssist.getJsonForGridAlias(retlist,
+					new String[] { "id,podStatus", "taskOnlineId,imageVersion", "taskOnlineId,namespace" }, convertsMap,
+					retlist.size());// .getJsonForGridAlias(retlist, retlist.size());
+		}
+		return TapestryAssist.getTextStreamResponse(retstr);
+	}
 
-    public TextStreamResponse onStartK8sTask() {
-        long curtime1 = new Date().getTime();
-        String taskid = request.getParameter("taskid");
-        Result ret = duckulaAssit.startTaskForK8s(CommandType.consumer, taskid, true);// TODO
-        // pvc的初始化需解决、可以传入参数standalone
-        // 等待一段时间，为启动各个task留点时间
-        long curtime2 = System.currentTimeMillis();
-        while ((curtime2 - curtime1) < 3000) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-            curtime2 = new Date().getTime();
-        }
-        return TapestryAssist.getTextStreamResponse(ret);
-    }
+	public TextStreamResponse onStartK8sTask() {
+		long curtime1 = new Date().getTime();
+		String taskid = request.getParameter("taskid");
+		Result ret = duckulaAssit.startTaskForK8s(CommandType.consumer, taskid, true);// TODO
+		// pvc的初始化需解决、可以传入参数standalone
+		// 等待一段时间，为启动各个task留点时间
+		long curtime2 = System.currentTimeMillis();
+		while ((curtime2 - curtime1) < 3000) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+			curtime2 = new Date().getTime();
+		}
+		return TapestryAssist.getTextStreamResponse(ret);
+	}
 
-    public TextStreamResponse onSave() {
-        final Consumer consumerparam = TapestryAssist.getBeanFromPage(Consumer.class, requestGlobals);
-        List<Rule> ruleList = consumerparam.getRuleList();
-        for (Rule rule : ruleList) {
-            if (StringUtil.isNull(rule.getItems().get(RuleItem.key)) && consumerparam.getSenderConsumerEnum() != SenderConsumerEnum.no) {
-                return TapestryAssist.getTextStreamResponse(Result
-                        .getError(String.format("db:%s,tb:%s,需要设置idkey", rule.getDbPattern(), rule.getTbPattern())));
-            }
+	public TextStreamResponse onSave() {
+		final Consumer consumerparam = TapestryAssist.getBeanFromPage(Consumer.class, requestGlobals);
+		List<Rule> ruleList = consumerparam.getRuleList();
+		for (Rule rule : ruleList) {
+			if (StringUtil.isNull(rule.getItems().get(RuleItem.key))
+					&& consumerparam.getSenderConsumerEnum() != SenderConsumerEnum.no) {
+				return TapestryAssist.getTextStreamResponse(Result
+						.getError(String.format("db:%s,tb:%s,需要设置idkey", rule.getDbPattern(), rule.getTbPattern())));
+			}
 
-            if ((consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6 || consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7)
-                    && StringUtil.isNull(rule.getItems().get(RuleItem.index))) {
-                return TapestryAssist.getTextStreamResponse(Result.getError(
-                        String.format("db:%s,tb:%s,es发送者需要设置index", rule.getDbPattern(), rule.getTbPattern())));
-            }
+			if ((consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6
+					|| consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7)
+					&& StringUtil.isNull(rule.getItems().get(RuleItem.index))) {
+				return TapestryAssist.getTextStreamResponse(Result.getError(
+						String.format("db:%s,tb:%s,es发送者需要设置index", rule.getDbPattern(), rule.getTbPattern())));
+			}
 
-            if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.jdbc
-                    && (StringUtil.isNull(rule.getItems().get(RuleItem.dbinstanceid))
-                    || StringUtil.isNull(rule.getItems().get(RuleItem.dbtb)))) {
-                return TapestryAssist.getTextStreamResponse(Result.getError(String
-                        .format("db:%s,tb:%s,jdbc发送者需要设置dbinstanceid和dbtb", rule.getDbPattern(), rule.getTbPattern())));
-            }
+			if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.jdbc
+					&& (StringUtil.isNull(rule.getItems().get(RuleItem.dbinstanceid))
+							|| StringUtil.isNull(rule.getItems().get(RuleItem.dbtb)))) {
+				return TapestryAssist.getTextStreamResponse(Result.getError(String
+						.format("db:%s,tb:%s,jdbc发送者需要设置dbinstanceid和dbtb", rule.getDbPattern(), rule.getTbPattern())));
+			}
 
-            if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.kafka
-                    && StringUtil.isNull(rule.getItems().get(RuleItem.topic))) {
-                return TapestryAssist.getTextStreamResponse(Result.getError(
-                        String.format("db:%s,tb:%s,kafka发送者需要设置topic.", rule.getDbPattern(), rule.getTbPattern())));
-            }
-        }
-        Stat stat = ZkUtil.exists(ZkPath.consumers, consumerparam.getId());
-        if (stat == null) {// 新增
-            consumerparam.setRun(YesOrNo.no);// 不立即启动，需要做其它配置
-            ZkClient.getInst().createNode(ZkPath.consumers.getPath(consumerparam.getId()),
-                    JSONObject.toJSONString(consumerparam));
-            PathChildrenCache createPathChildrenCache = ZkClient.getInst().createPathChildrenCache(
-                    ZkPath.consumers.getPath(consumerparam.getId()), InitDuckula.haWatcherConsumer);
-            InitDuckula.cacheConsumerListener.put(consumerparam.getId(), createPathChildrenCache);
-        } else {
-            String isInsert = request.getParameter("isInsert");// 保证不会覆盖别人的任务
-            if (StringUtil.isNotNull(isInsert) && "no".equals(isInsert)) {
-                ZkClient.getInst().updateNode(ZkPath.consumers.getPath(consumerparam.getId()),
-                        JSONObject.toJSONString(consumerparam));
-            } else {
-                return TapestryAssist.getTextStreamResponse(Result.getError("已存在此任务"));
-            }
-        }
+			if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.kafka
+					&& StringUtil.isNull(rule.getItems().get(RuleItem.topic))) {
+				return TapestryAssist.getTextStreamResponse(Result.getError(
+						String.format("db:%s,tb:%s,kafka发送者需要设置topic.", rule.getDbPattern(), rule.getTbPattern())));
+			}
+		}
+		Stat stat = ZkUtil.exists(ZkPath.consumers, consumerparam.getId());
+		if (stat == null) {// 新增
+			consumerparam.setRun(YesOrNo.no);// 不立即启动，需要做其它配置
+			ZkClient.getInst().createNode(ZkPath.consumers.getPath(consumerparam.getId()),
+					JSONObject.toJSONString(consumerparam));
+			PathChildrenCache createPathChildrenCache = ZkClient.getInst().createPathChildrenCache(
+					ZkPath.consumers.getPath(consumerparam.getId()), InitDuckula.haWatcherConsumer);
+			InitDuckula.cacheConsumerListener.put(consumerparam.getId(), createPathChildrenCache);
+		} else {
+			String isInsert = request.getParameter("isInsert");// 保证不会覆盖别人的任务
+			if (StringUtil.isNotNull(isInsert) && "no".equals(isInsert)) {
+				ZkClient.getInst().updateNode(ZkPath.consumers.getPath(consumerparam.getId()),
+						JSONObject.toJSONString(consumerparam));
+			} else {
+				return TapestryAssist.getTextStreamResponse(Result.getError("已存在此任务"));
+			}
+		}
 
-        // 添加ES索引
+		// 添加ES索引
 //        if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6
 //                || consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
 //
@@ -272,54 +274,51 @@ public class ConsumerManager {
 //            saveToZk(ops, rules, taskparam);
 //        }
 
-        IOps ops = null;
-        if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6) {
-            // ES6
-            ops = OpsPlugEnum.es6.newOps();
-        } else if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
-            // ES7
-            ops = OpsPlugEnum.es7.newOps();
-        }
-        if (ops != null) {
-            Task taskparam = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
-        	 List<Rule> rules = ops.createIndex(consumerparam.getRules(), consumerparam.getMiddlewareInst(),
-            		taskparam.getIp(), taskparam.getPort(), taskparam.getUser(), taskparam.getPwd());
-            saveToZk(ops, rules, taskparam);
-        }
+		IOps ops = null;
+		if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es6) {
+			// ES6
+			ops = OpsPlugEnum.es6.newOps();
+		} else if (consumerparam.getSenderConsumerEnum() == SenderConsumerEnum.es7) {
+			// ES7
+			ops = OpsPlugEnum.es7.newOps();
+		}
+		if (ops != null) {
+			Task taskparam = ZkUtil.buidlTask(consumerparam.getTaskOnlineId());
+			List<Rule> rules = ops.createIndex(consumerparam.getRules(), consumerparam.getMiddlewareInst(),
+					taskparam.getIp(), taskparam.getPort(), taskparam.getUser(), taskparam.getPwd());
+			saveToZk(ops, rules, taskparam);
+		}
 
+		// Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(
+		// ZkPath.consumers.getPath(consumerparam.getId()),
+		// JSONObject.toJSONString(consumerparam));
+		return req.retSuccInfo("保存consumer成功");
+	}
 
-        // Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(
-        // ZkPath.consumers.getPath(consumerparam.getId()),
-        // JSONObject.toJSONString(consumerparam));
-        return req.retSuccInfo("保存consumer成功");
-    }
-
-    private void saveToZk(IOps ops, List<Rule> rules,Task taskparam) {
-        if (CollectionUtils.isEmpty(rules)) {
-            return;
-        }
-        for (Rule rule : rules) {
-            String db = rule.getDbPattern().replaceAll("\\^", "").replaceAll("\\$", "")
-                    .replaceAll("\\[0-9\\]\\*", "");
-            String tb = rule.getTbPattern().replaceAll("\\^", "").replaceAll("\\$", "")
-                    .replaceAll("\\[0-9\\]\\*", "");
-            Mapping mapping = new Mapping();
-            mapping.setId(rule.getItems().get(RuleItem.index) + "-_doc");
-            mapping.setDb(db);
-            mapping.setTb(tb);
-            mapping.setIndex(rule.getItems().get(RuleItem.index));
-            mapping.setType("_doc");
-            String contentjson = ops.createContext(taskparam.getIp(), taskparam.getPort(), taskparam.getUser(),
-                    taskparam.getPwd(), db, tb);
-            mapping.setContent(contentjson);
-            mapping.setShardsNum(Integer.parseInt(rule.getItems().get(RuleItem.partitions)));
-            mapping.setReplicas(Integer.parseInt(rule.getItems().get(RuleItem.copynum)));
-            mapping.setDbinst(taskparam.getDbinst());
-            Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(
-                    ZkPath.mappings.getPath(mapping.getId()), JSONObject.toJSONString(mapping));
-            log.info("创建索引节点结果：" + createOrUpdateNode.getMessage());
-        }
-    }
+	private void saveToZk(IOps ops, List<Rule> rules, Task taskparam) {
+		if (CollectionUtils.isEmpty(rules)) {
+			return;
+		}
+		for (Rule rule : rules) {
+			String db = rule.getDbPattern().replaceAll("\\^", "").replaceAll("\\$", "").replaceAll("\\[0-9\\]\\*", "");
+			String tb = rule.getTbPattern().replaceAll("\\^", "").replaceAll("\\$", "").replaceAll("\\[0-9\\]\\*", "");
+			Mapping mapping = new Mapping();
+			mapping.setId(rule.getItems().get(RuleItem.index) + "-_doc");
+			mapping.setDb(db);
+			mapping.setTb(tb);
+			mapping.setIndex(rule.getItems().get(RuleItem.index));
+			mapping.setType("_doc");
+			String contentjson = ops.createContext(taskparam.getIp(), taskparam.getPort(), taskparam.getUser(),
+					taskparam.getPwd(), db, tb);
+			mapping.setContent(contentjson);
+			mapping.setShardsNum(Integer.parseInt(rule.getItems().get(RuleItem.partitions)));
+			mapping.setReplicas(Integer.parseInt(rule.getItems().get(RuleItem.copynum)));
+			mapping.setDbinst(taskparam.getDbinst());
+			Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(ZkPath.mappings.getPath(mapping.getId()),
+					JSONObject.toJSONString(mapping));
+			log.info("创建索引节点结果：" + createOrUpdateNode.getMessage());
+		}
+	}
 //
 //	// 原来在Ops中直接依赖的ES包,现在采用插件的形式动态调用
 //	private void createIndex(Task task, IOps ops) {
@@ -381,99 +380,101 @@ public class ConsumerManager {
 //		}
 //	}
 
-    public TextStreamResponse onDel() {
-        String id = request.getParameter("id");
-        try {
-            InitDuckula.cacheConsumerListener.get(id).close();// 不关闭监听会导致节点删除后再创建新节点的情况
-        } catch (IOException e) {
-            log.error("关闭监听失败", e);
-        }
-        Result del = ZkUtil.del(ZkPath.consumers, id);
-        return TapestryAssist.getTextStreamResponse(del);
-    }
+	public TextStreamResponse onDel() {
+		String id = request.getParameter("id");
+		try {
+			if (InitDuckula.cacheConsumerListener.get(id) != null) {
+				InitDuckula.cacheConsumerListener.get(id).close();// 不关闭监听会导致节点删除后再创建新节点的情况
+			}
+		} catch (Throwable e) {
+			log.error("关闭监听失败", e);
+		}
+		Result del = ZkUtil.del(ZkPath.consumers, id);
+		return TapestryAssist.getTextStreamResponse(del);
+	}
 
-    @SuppressWarnings("unchecked")
-    @OnEvent(value = "savesel")
-    private Result sava(JSONArray selIds, org.apache.tapestry5.json.JSONObject paramsObj) {
-        long curtime1 = new Date().getTime();
-        String idstr = paramsObj.has("id") ? paramsObj.getString("id") : null;// 旧的已启动的服务
-        String taskid = paramsObj.getString("taskid");
-        String[] ipsAry = StringUtil.isNotNull(idstr) ? idstr.split(",") : new String[0];
-        final List<String> ips = CollectionFactory.newList();// 旧的已启动的服务
-        for (int i = 0; i < ipsAry.length; i++) {
-            if (StringUtil.isNotNull(ipsAry[i])) {
-                ips.add(ipsAry[i].split("\\|")[0]);
-            }
-        }
-        final List<Object> idsneed = selIds.toList();// 已选择的ip
-        List<String> adds = (List<String>) CollectionUtils.select(idsneed, new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                return !ips.contains(object);
-            }
-        });
+	@SuppressWarnings("unchecked")
+	@OnEvent(value = "savesel")
+	private Result sava(JSONArray selIds, org.apache.tapestry5.json.JSONObject paramsObj) {
+		long curtime1 = new Date().getTime();
+		String idstr = paramsObj.has("id") ? paramsObj.getString("id") : null;// 旧的已启动的服务
+		String taskid = paramsObj.getString("taskid");
+		String[] ipsAry = StringUtil.isNotNull(idstr) ? idstr.split(",") : new String[0];
+		final List<String> ips = CollectionFactory.newList();// 旧的已启动的服务
+		for (int i = 0; i < ipsAry.length; i++) {
+			if (StringUtil.isNotNull(ipsAry[i])) {
+				ips.add(ipsAry[i].split("\\|")[0]);
+			}
+		}
+		final List<Object> idsneed = selIds.toList();// 已选择的ip
+		List<String> adds = (List<String>) CollectionUtils.select(idsneed, new Predicate() {
+			@Override
+			public boolean evaluate(Object object) {
+				return !ips.contains(object);
+			}
+		});
 
-        List<String> dels = (List<String>) CollectionUtils.select(ips, new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                return !idsneed.contains(object);
-            }
-        });
+		List<String> dels = (List<String>) CollectionUtils.select(ips, new Predicate() {
+			@Override
+			public boolean evaluate(Object object) {
+				return !idsneed.contains(object);
+			}
+		});
 
-        try {
-            List<Server> allserver = duckulaAssit.findAllServers();
-            StringBuffer errmsg = new StringBuffer();
-            if (CollectionUtils.isNotEmpty(dels)) {// stop
-                for (String del : dels) {
-                    Server curserver = selServer(allserver, del);
-                    Result ret = duckulaAssit.stopTask(CommandType.consumer, taskid, curserver, true);
-                    if (!ret.isSuc()) {
-                        errmsg.append(ret.getMessage());
-                    }
-                }
-            }
-            if (CollectionUtils.isNotEmpty(adds)) {// start
-                for (String add : adds) {
-                    Server curserver = selServer(allserver, add);
-                    Result ret = duckulaAssit.startTask(CommandType.consumer, taskid, curserver, true);
-                    if (!ret.isSuc()) {
-                        errmsg.append(ret.getMessage());
-                    }
-                }
-            }
-            if (errmsg.length() > 0) {
-                return Result.getError(errmsg.toString());
-            }
-        } catch (Exception e) {
-            return Result.getError("出错:" + e.getMessage());
-        }
+		try {
+			List<Server> allserver = duckulaAssit.findAllServers();
+			StringBuffer errmsg = new StringBuffer();
+			if (CollectionUtils.isNotEmpty(dels)) {// stop
+				for (String del : dels) {
+					Server curserver = selServer(allserver, del);
+					Result ret = duckulaAssit.stopTask(CommandType.consumer, taskid, curserver, true);
+					if (!ret.isSuc()) {
+						errmsg.append(ret.getMessage());
+					}
+				}
+			}
+			if (CollectionUtils.isNotEmpty(adds)) {// start
+				for (String add : adds) {
+					Server curserver = selServer(allserver, add);
+					Result ret = duckulaAssit.startTask(CommandType.consumer, taskid, curserver, true);
+					if (!ret.isSuc()) {
+						errmsg.append(ret.getMessage());
+					}
+				}
+			}
+			if (errmsg.length() > 0) {
+				return Result.getError(errmsg.toString());
+			}
+		} catch (Exception e) {
+			return Result.getError("出错:" + e.getMessage());
+		}
 
-        // 等待一段时间，为启动各个task留点时间
-        long curtime2 = System.currentTimeMillis();
-        while ((curtime2 - curtime1) < 3000) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-            curtime2 = new Date().getTime();
-        }
-        return Result.getSuc();
-    }
+		// 等待一段时间，为启动各个task留点时间
+		long curtime2 = System.currentTimeMillis();
+		while ((curtime2 - curtime1) < 3000) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+			curtime2 = new Date().getTime();
+		}
+		return Result.getSuc();
+	}
 
-    private Server selServer(List<Server> allserver, String serverid) {
-        if (CollectionUtils.isEmpty(allserver)) {
-            return null;
-        }
-        for (Server server : allserver) {
-            if (server.getIp().equals(serverid)) {
-                return server;
-            }
-        }
-        return null;
-    }
+	private Server selServer(List<Server> allserver, String serverid) {
+		if (CollectionUtils.isEmpty(allserver)) {
+			return null;
+		}
+		for (Server server : allserver) {
+			if (server.getIp().equals(serverid)) {
+				return server;
+			}
+		}
+		return null;
+	}
 
-    public void onActivate(String namespace) {
-        this.namespace = namespace;
-    }
+	public void onActivate(String namespace) {
+		this.namespace = namespace;
+	}
 
 }
