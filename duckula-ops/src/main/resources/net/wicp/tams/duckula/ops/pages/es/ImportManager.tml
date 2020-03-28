@@ -164,7 +164,7 @@
    <r:dialogtree id="server_dialog" treeLoadUrl="/duckula/taskManager:QueryTree" title="指派服务器" width="600" sucHandle="doSuc" checkHandle="doCheck"></r:dialogtree>
 <script>
      var needServer=${needServer};
-     var namespace='${namespace}';
+	 var namespace='${namespace}';
      function showopt(value,row,index){
             var optCan=gt( row.hostNum,0);
             var k8sCan=!(""==row.podStatus);//Pending

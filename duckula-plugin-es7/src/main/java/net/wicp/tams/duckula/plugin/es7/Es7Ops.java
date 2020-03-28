@@ -19,6 +19,7 @@ import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.sql.SQLException;
@@ -160,7 +161,10 @@ public class Es7Ops implements IOps {
         if (StringUtil.isNotNull(mappingId)) {// 修改
             // 为了安全，不删除索引
             // getESClient(cluster).indexDel(mappingparam.getIndex());
-            createIndex = Result.getSuc();
+
+            createIndex = StringUtils.equalsAnyIgnoreCase("{}",content)?
+                    Result.getSuc():getESClient(cluster).putMapping(index,proMappingBean);
+            // createIndex = Result.getSuc();
         } else {
 //                mappingparam.setId(index + "-" + type);
             createIndex = getESClient(cluster).indexCreate(index, shardsNum, replicas, null, proMappingBean);

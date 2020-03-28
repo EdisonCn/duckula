@@ -27,6 +27,10 @@ public class Mapping {
 	private String db1;
 	private String tb1;
 	private String rela1;
+	//新增字段
+	private String addJson;
+	//差异字段
+	private String diffJson;
 
 	public List<SimpleTreeNode> buildRelaNodes() {
 		if (StringUtil.isNull(rela1)) {

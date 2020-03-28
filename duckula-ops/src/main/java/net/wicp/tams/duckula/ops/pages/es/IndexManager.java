@@ -1,13 +1,15 @@
 package net.wicp.tams.duckula.ops.pages.es;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.google.gson.JsonParseException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.Request;
@@ -41,6 +43,7 @@ import net.wicp.tams.duckula.ops.beans.DbInstance;
 import net.wicp.tams.duckula.ops.servicesBusi.IDuckulaAssit;
 import net.wicp.tams.duckula.plugin.IOps;
 import net.wicp.tams.duckula.plugin.PluginAssit;
+import java.util.Map.Entry;
 
 @Slf4j
 public class IndexManager {
@@ -203,7 +206,7 @@ public class IndexManager {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param middlewareTypeStr
 	 * @param version
 	 * @return
@@ -240,6 +243,7 @@ public class IndexManager {
 		return TapestryAssist.getTextStreamResponse(retResult);
 	}
 
+
 	public TextStreamResponse onCreateIndexAlias(String cluster) {
 		String oldIndex = request.getParameter("oldIndex");
 		String[] aliases = request.getParameter("alias").split(",");
@@ -247,6 +251,82 @@ public class IndexManager {
 		return TapestryAssist.getTextStreamResponse(retResult);
 	}
 
+    /**
+     * 检查索引字段是否符合要求
+     * @param index 索引名
+     * @param type 类型
+     * @param contentJson 当前索引json
+     * @return JSONObject
+     * 格式：
+     * {
+     *     add：新增字段,
+     *     diff：差异字段
+     *     {
+     *         oldType:zk存储的字段类型,newType:当前索引字段类型
+     *     }
+     * }
+     */
+	private JSONObject checkIndexContent(String index, String type, String contentJson){
+		if(StringUtils.isEmpty(index)||StringUtils.isEmpty(type)||StringUtils.isEmpty(contentJson)){
+			return new JSONObject();
+		}
+		String indexPath = String.format("%s/%s",ZkPath.mappings.getRoot(),index+"-"+type);
+
+		//判断结点是否存在
+		if(ZkClient.getInst().exists(indexPath)==null){
+			return new JSONObject();
+		}
+
+		Map<String,String> curTypeMap = JSONObject.parseObject(contentJson,new TypeReference<Map<String,String>>(){});
+		JSONObject zkJsonObject = ZkClient.getInst().getZkData(indexPath);
+		Map<String,String> oldTypeMap = JSONObject.parseObject(zkJsonObject.getString("content"),
+				new TypeReference<Map<String,String>>(){});
+		JSONObject diffJosn = new JSONObject();
+		JSONObject addJson = new JSONObject();
+
+		//只有新增没有删除
+		Iterator curIt = curTypeMap.entrySet().iterator();
+
+		while (curIt.hasNext()){
+			Map.Entry entry = (Map.Entry) curIt.next();
+			String key = entry.getKey().toString();
+			//新增字段
+			if(!oldTypeMap.containsKey(key)){
+				addJson.put(key,entry.getValue());
+			}else{
+				String newType = entry.getValue().toString();
+				String oldType = oldTypeMap.get(key);
+				//差异字段
+				if(!StringUtils.equalsAnyIgnoreCase(oldType,newType)){
+					JSONObject temp = new JSONObject();
+					temp.put("oldType",oldType);
+					temp.put("newType",newType);
+					diffJosn.put(key,temp);
+				}
+			}
+		}
+		JSONObject result = new JSONObject();
+		result.put("diff",diffJosn.toString());
+		result.put("add",addJson.toString());
+		return result;
+	}
+
+	public TextStreamResponse onEditIndex(){
+		final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
+		JSONObject result = checkIndexContent(mappingparam.getIndex(),mappingparam.getType(),mappingparam.getContent());
+		return TapestryAssist.getTextStreamResponse(result.toJSONString());
+	}
+
+    /**
+     * @param paramCluster
+     * @return
+     * 返回Json字符串
+     * {
+     *  "content":contentjson,
+     *  "diff":differenceJson,
+     *  "add":addJson
+     * }
+     */
 	public TextStreamResponse onCreateIndex(String paramCluster) {
 		// String requestPayload =
 		// J2EEAssist.getRequestPayload(requestGlobals.getHTTPServletRequest());///////////////////////////////////////////////zjh
@@ -274,7 +354,15 @@ public class IndexManager {
 		if (ArrayUtils.isNotEmpty(cols) && !"_rowkey_".equals(cols[0][0])) {// 有主键
 			contentjson = getOps(paramCluster).packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
 		}
-		return TapestryAssist.getTextStreamResponse(contentjson);
+		//检查新增字段和差异字段
+		JSONObject result = checkIndexContent(mappingparam.getIndex(),mappingparam.getType(),contentjson);
+		result.put("content",contentjson);
+		return TapestryAssist.getTextStreamResponse(result.toJSONString());
+	}
+
+	private boolean checkValidContent(String json){
+		String jsonNoWhiteSpace = StringUtils.deleteWhitespace(json);
+		return !StringUtils.isEmpty(jsonNoWhiteSpace)&&!StringUtils.equals("{}",jsonNoWhiteSpace);
 	}
 
 	public TextStreamResponse onSave(String cluster) {
@@ -289,11 +377,19 @@ public class IndexManager {
 		String index = mappingparam.getIndex();
 		String type = mappingparam.getType();
 		String content = mappingparam.getContent();
+		/**
+		 * 修改 net.wicp.tams.duckula.common.beans.Mapping
+		 * 新增 addJson,diffJson字段
+		 */
+		String addJson = mappingparam.getAddJson();
+		String diffJson = mappingparam.getDiffJson();
 		int shardsNum = mappingparam.getShardsNum();
 		int replicas = mappingparam.getReplicas();
 
 		if (StringUtil.isNull(mappingId)) {// 修改
 			mappingparam.setId(index + "-" + type);
+		}else{
+            content = addJson;
 		}
 
 		Result createIndex = null;
@@ -306,6 +402,20 @@ public class IndexManager {
 		if (!createIndex.isSuc()) {
 			return TapestryAssist.getTextStreamResponse(createIndex);
 		}
+
+        /**
+		 * 存在差异字段时修改content
+         */
+		if(checkValidContent(diffJson)){
+			//从zk获取旧json
+			JSONObject oldJson = ZkClient.getInst().getZkData(String.format("%s/%s",ZkPath.mappings.getRoot(),index+"-"+type)).getJSONObject("content");
+			Set<Entry<String,Object>> addJsonObject = JSON.parseObject(addJson).entrySet();
+			for(Entry<String,Object> entry : addJsonObject){
+				oldJson.put(entry.getKey(),entry.getValue().toString());
+			}
+			mappingparam.setContent(JSON.toJSONString(oldJson, SerializerFeature.UseSingleQuotes));
+		}
+
 		Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(ZkPath.mappings.getPath(mappingparam.getId()),
 				JSONObject.toJSONString(mappingparam));
 		return TapestryAssist.getTextStreamResponse(createOrUpdateNode);

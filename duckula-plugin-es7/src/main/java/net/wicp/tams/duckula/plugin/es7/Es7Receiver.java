@@ -1,5 +1,4 @@
 package net.wicp.tams.duckula.plugin.es7;
-
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Conf;
@@ -71,6 +70,8 @@ public class Es7Receiver extends ReceiveAbs {
 	@Override
 	public boolean isSync() {
 		return true;
+
+
 	}
 
 }

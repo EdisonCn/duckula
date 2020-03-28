@@ -326,10 +326,10 @@ public class ConsumerManager {
 //		for (Rule rule : consumerparam.getRuleList()) {
 //			if (StringUtil.isNotNull(rule.getItems().get(RuleItem.copynum))
 //					&& StringUtil.isNotNull(rule.getItems().get(RuleItem.partitions))) {
-//				String db = rule.getDbPattern().replaceAll("\\^", "").replaceAll("\\$", "")
-//						.replaceAll("\\[0-9\\]\\*", "");
-//				String tb = rule.getTbPattern().replaceAll("\\^", "").replaceAll("\\$", "")
-//						.replaceAll("\\[0-9\\]\\*", "");
+//				String db = rule.getDbPattern().replaceAllQuotation("\\^", "").replaceAllQuotation("\\$", "")
+//						.replaceAllQuotation("\\[0-9\\]\\*", "");
+//				String tb = rule.getTbPattern().replaceAllQuotation("\\^", "").replaceAllQuotation("\\$", "")
+//						.replaceAllQuotation("\\[0-9\\]\\*", "");
 //
 //				List<IndexBean> queryIndex = IndexManager.getESClient(consumerparam.getMiddlewareInst())
 //						.queryIndex(rule.getItems().get(RuleItem.index));

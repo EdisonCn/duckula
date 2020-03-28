@@ -120,6 +120,7 @@
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
 			<artifactId>tams-component</artifactId>
+			<version>1.2.5</version>
 		</dependency>
 		<dependency>
 			<groupId>net.wicp.tams</groupId>
@@ -152,7 +153,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>net.wicp.tams</groupId>
+            <artifactId>common-es-assit</artifactId>
+            <version>7.6.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 	<build>
 		<finalName>duckula-ops</finalName>
 		<plugins>
