@@ -9,7 +9,7 @@
 <r:query id="q" qBlock="query" queryUrl="/es/indexManager:query/${cluster}" uBlock="save"
          saveUrl="/es/indexManager:save/${cluster}" deleteUrl="/es/indexManager:del/${cluster}" opFormatter="showopt"
          columns="[[{field:'index',width:250,title:'索引'},{field:'type',width:250,title:'类型'},{field:'alias',width:300,title:'别名'},{field:'isExit',width:100,title:'es是否存在'},{field:'op',width:250,title:'操作'}]]"
-         dialogStyle="width:900px;height:650px;" initAddHandle="initAdd" initSaveHandle="initUpdate" saveCheckHandle="saveCheck" pagination="false"
+         dialogStyle="width:900px;height:620px;" initAddHandle="initAdd" initSaveHandle="initUpdate" saveCheckHandle="saveCheck" pagination="false"
          usrBlock="usrBlock"/>
 <t:block id="query">
     <table class="frame_table_list_4">
@@ -98,14 +98,14 @@
             <td class="frame_table_list_2_righttext">新增字段</td>
             <td colspan="3">
                 <input id="addsave" name="addJson" class="easyui-textbox"
-                       data-options="multiline:true,height:80,width:650"/>
+                       data-options="multiline:true,height:40,width:650"/>
             </td>
         </tr>
         <tr>
             <td class="frame_table_list_2_righttext">差异字段</td>
             <td colspan="3">
                 <input id="diffsave" name="difference" class="easyui-textbox"
-                       data-options="multiline:true,height:80,width:650"/>
+                       data-options="multiline:true,height:40,width:650"/>
             </td>
         </tr>
     </table>
