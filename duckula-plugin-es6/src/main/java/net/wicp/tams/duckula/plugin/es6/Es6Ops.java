@@ -161,8 +161,9 @@ public class Es6Ops implements IOps {
         if (StringUtil.isNotNull(mappingId)) {// 修改
             // 为了安全，不删除索引
             // getESClient(cluster).indexDel(mappingparam.getIndex());
+
             createIndex = StringUtils.equalsAnyIgnoreCase("{}",content)?
-                    Result.getSuc():getESClient(cluster).putMapping(index,proMappingBean);
+                    Result.getSuc():getESClient(cluster).putMapping(index,proMappingBean.toString(),type);
         } else {
 //                mappingparam.setId(index + "-" + type);
             createIndex = getESClient(cluster).indexCreate(index, type,

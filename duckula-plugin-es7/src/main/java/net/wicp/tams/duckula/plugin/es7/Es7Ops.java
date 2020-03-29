@@ -163,7 +163,7 @@ public class Es7Ops implements IOps {
             // getESClient(cluster).indexDel(mappingparam.getIndex());
 
             createIndex = StringUtils.equalsAnyIgnoreCase("{}",content)?
-                    Result.getSuc():getESClient(cluster).putMapping(index,proMappingBean);
+                    Result.getSuc():getESClient(cluster).putMapping(index,proMappingBean.toString(),type);
             // createIndex = Result.getSuc();
         } else {
 //                mappingparam.setId(index + "-" + type);
