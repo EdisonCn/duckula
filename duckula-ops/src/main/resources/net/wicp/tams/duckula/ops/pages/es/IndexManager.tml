@@ -259,7 +259,19 @@
 
     function initUpdate(){
         changeReadOnly(true);
-        // checkIndex();
+        checkIndex();
+    }
+
+    function checkIndex(){
+        var formData = $("#q_updateform").serializeObject();
+        if(or(formData.content=='',formData.index=='')){
+            return ;
+        }
+        $.post($.rjzjh.packurl('/es/indexManager:editIndex/'), formData, function (data) {
+            var jsondata = JSON.parse(data);
+            $('#addsave').textbox('setValue', replaceAllQuotation(jsondata["add"]));
+            $('#diffsave').textbox('setValue', replaceAllQuotation(jsondata["diff"]));
+        }, 'text');
     }
 
     function changeDbInst(val) {
@@ -344,15 +356,7 @@
         });
         //失焦后检查是否修改
         $('#contentsave').textbox("textbox").bind("blur",function () {
-            var formData = $("#q_updateform").serializeObject();
-            if(or(formData.content=='',formData.index=='')){
-                return ;
-            }
-            $.post($.rjzjh.packurl('/es/indexManager:editIndex/'), formData, function (data) {
-                var jsondata = JSON.parse(data);
-                $('#addsave').textbox('setValue', replaceAllQuotation(jsondata["add"]));
-                $('#diffsave').textbox('setValue', replaceAllQuotation(jsondata["diff"]));
-            }, 'text');
+            checkIndex();
         });
     });
 
