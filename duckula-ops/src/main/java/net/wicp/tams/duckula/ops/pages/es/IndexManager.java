@@ -317,6 +317,15 @@ public class IndexManager {
 //		return TapestryAssist.getTextStreamResponse(result.toJSONString());
 //	}
 
+    /**
+     * 获取数据库信息并对比zk内容，检查新增字段和差异字段
+     * @param paramCluster
+     * @return Json数据
+     * {
+     *   "diff":differenceJson,
+     *   "add":addJson
+     * }
+     */
 	public TextStreamResponse onUpdateInitCheck(String paramCluster){
 		final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
 		DbInstance temp = ZkClient.getInst().getDateObj(
