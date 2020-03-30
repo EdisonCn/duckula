@@ -422,10 +422,21 @@ public class IndexManager {
 		int shardsNum = mappingparam.getShardsNum();
 		int replicas = mappingparam.getReplicas();
 
-		if (StringUtil.isNull(mappingId)) {// 修改
+		if (StringUtil.isNull(mappingId)) {
 			mappingparam.setId(index + "-" + type);
-		}else{
-            content = addJson;
+		}else{//更新时
+			JSONObject contentJson = checkValidContent(diffJson)?
+					ZkClient.getInst().getZkData(String.format("%s/%s",ZkPath.mappings.getRoot(),index+"-"+type)).getJSONObject("content")
+					:JSON.parseObject(content);
+			//无新增不替换
+			if(checkValidContent(addJson)){
+				Set<Entry<String,Object>> addJsonObject = JSON.parseObject(addJson).entrySet();
+				for(Entry<String,Object> entry : addJsonObject){
+					contentJson.put(entry.getKey(),entry.getValue().toString());
+				}
+			}
+			mappingparam.setContent(JSON.toJSONString(contentJson, SerializerFeature.UseSingleQuotes));
+			content = addJson;
 		}
 
 		Result createIndex = null;
@@ -437,19 +448,6 @@ public class IndexManager {
 
 		if (!createIndex.isSuc()) {
 			return TapestryAssist.getTextStreamResponse(createIndex);
-		}
-
-        /**
-		 * 存在差异字段时修改content
-         */
-		if(checkValidContent(diffJson)){
-			//从zk获取旧json
-			JSONObject oldJson = ZkClient.getInst().getZkData(String.format("%s/%s",ZkPath.mappings.getRoot(),index+"-"+type)).getJSONObject("content");
-			Set<Entry<String,Object>> addJsonObject = JSON.parseObject(addJson).entrySet();
-			for(Entry<String,Object> entry : addJsonObject){
-				oldJson.put(entry.getKey(),entry.getValue().toString());
-			}
-			mappingparam.setContent(JSON.toJSONString(oldJson, SerializerFeature.UseSingleQuotes));
 		}
 
 		Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(ZkPath.mappings.getPath(mappingparam.getId()),
