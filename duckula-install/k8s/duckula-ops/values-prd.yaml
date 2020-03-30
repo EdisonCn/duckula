@@ -88,7 +88,7 @@ userconfig:
       duckula.task.image.name=registry.choerodon.xforceplus.com/rjzjh/duckula
       duckula.task.image.tag=task.2.2.5
       #位点保留最大天数
-      duckula.ops.pos.maxsize=7
+      duckula.ops.pos.maxsize=2
   es:
     es-dev.properties: |-
       #此配置为示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
@@ -120,6 +120,7 @@ userconfig:
       docker.host.ip.192.168.50.93=node-es3
       docker.host.ip.192.168.50.94=node-es4
       docker.host.ip.192.168.50.95=node-es5
+      middleware.version=6
     es-seller.properties: |-
       #此配置为示例，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
       common.es.host.name=seller-node-es1,seller-node-es2,seller-node-es3,seller-node-es4,seller-node-es5
@@ -150,6 +151,7 @@ userconfig:
       docker.host.ip.172.18.203.12=seller-node-es3
       docker.host.ip.172.18.203.13=seller-node-es4
       docker.host.ip.172.18.203.11=seller-node-es5
+      middleware.version=6      
   kafka:
     kafka-dev.properties: |-
       #kafka示例配置，请修改为实际中使用的配置,对于k8s，在各相关的configmap中进行配置，
@@ -212,8 +214,21 @@ userconfig:
       common.redis.cachecloud.redis_cluster_suffix = /cache/client/redis/cluster/%s.json?clientVersion=
       common.redis.cachecloud.redis_sentinel_suffix = /cache/client/redis/sentinel/%s.json?clientVersion=
       common.redis.cachecloud.redis_standalone_suffix = /cache/client/redis/standalone/%s.json?clientVersion=
-      common.redis.cachecloud.cachecloud_report_url = /cachecloud/client/reportData.json
-
+      common.redis.cachecloud.cachecloud_report_url = /cachecloud/client/reportData.json      
+  cassandra:
+    cassandra-dev.properties: |-
+      #commons
+      common.cassandra.pool.default.contactpoint=cassandra.phoenix-t.xforceplus.com
+      common.cassandra.pool.default.port=29042
+      #注意，并不会返回准确的数据，可能稍微多或少一些
+      common.cassandra.pool.default.query.fetchSize=2000
+      #默认一致性水平为ONE ,ANY只支持写
+      common.cassandra.pool.default.query.consistencyLevel=ONE
+      #每个连接允许32请求并发。
+      common.cassandra.pool.default.pooling.maxRequestsPerConnection=32
+      #集群里的机器至少有2个连接。注意是和集群里的每个机器都至少有2个连接。
+      common.cassandra.pool.default.pooling.coreConnectionsPerHost=2
+      common.cassandra.pool.default.pooling.maxConnectionsPerHost=4
 podAnnotations: {}
 
 resources:
