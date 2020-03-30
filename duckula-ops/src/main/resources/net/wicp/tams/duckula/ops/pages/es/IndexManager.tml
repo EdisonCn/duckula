@@ -197,17 +197,23 @@
 
     //由于context过长会报：413 (FULL head)
     function saveCheck(formdata) {
-        if(and($("#diffsave").val()!="{}",$("#diffsave").val()!="")){
-            $.rjzjh.confirm('差异字段将不会被写入es，确定吗？',function(){
-                // $.messager.progress({
-                //     title:window.msg.hintwaiting,
-                //     msg:window.msg.hinthandling
-                // });
+        $.rjzjh.confirm('确定要修改吗？',function(){
+            // $.messager.progress({
+            //     title:window.msg.hintwaiting,
+            //     msg:window.msg.hinthandling
+            // });
+            if(and($("#diffsave").val()!="{}",$("#diffsave").val()!="")){
+                $.rjzjh.confirm('差异字段将不会被写入es，确定吗？',function(){
+                    // $.messager.progress({
+                    //     title:window.msg.hintwaiting,
+                    //     msg:window.msg.hinthandling
+                    // });
+                    finalSave(formdata);
+                });
+            }else{
                 finalSave(formdata);
-            });
-        }else{
-            finalSave(formdata);
-        }
+            }
+        });
         return false;
     }
 
@@ -271,13 +277,11 @@
             return null;
         }
         var formData = $("#q_updateform").serializeObject();
-        $.post($.rjzjh.packurl('/es/indexManager:createIndex/${cluster}'), formData, function (data) {
+        $.post($.rjzjh.packurl('/es/indexManager:updateInitCheck/${cluster}'), formData, function (data) {
             var jsondata = JSON.parse(data);
-            $('#contentsave').textbox('setValue', replaceAllQuotation(jsondata["content"]));
             $('#addsave').textbox('setValue', replaceAllQuotation(jsondata["add"]));
             $('#diffsave').textbox('setValue', replaceAllQuotation(jsondata["diff"]));
         }, 'text');
-
     }
 
     function changeDbInst(val) {
@@ -345,19 +349,33 @@
             }, 'json');
         });
         $('#tbid,#rela1id').blur(function () {
-
-        });
-        //失焦后检查是否修改
-        $('#contentsave').textbox("textbox").bind("blur",function () {
-            var formData = $("#q_updateform").serializeObject();
-            if(or(formData.content=='',formData.index=='')){
-                return ;
+            var dbinst_inst = $('#dbinst_inst').val();
+            var dbid = $('#dbid').val();
+            var tbid = $('#tbid').val();
+            if (or(dbinst_inst == '', dbid == '', tbid == '')) {
+                $.rjzjh.alert('输入数据库实例，库名-表名会自动生成索引的内容');
+                return null;
             }
-            $.post($.rjzjh.packurl('/es/indexManager:editIndex/'), formData, function (data) {
+            var formData = $("#q_updateform").serializeObject();
+            $.post($.rjzjh.packurl('/es/indexManager:createIndex/${cluster}'), formData, function (data) {
                 var jsondata = JSON.parse(data);
+                $('#contentsave').textbox('setValue', replaceAllQuotation(jsondata["content"]));
                 $('#addsave').textbox('setValue', replaceAllQuotation(jsondata["add"]));
                 $('#diffsave').textbox('setValue', replaceAllQuotation(jsondata["diff"]));
             }, 'text');
+        });
+        //失焦后检查是否修改
+        $('#contentsave').textbox("textbox").bind("blur",function () {
+            // var formData = $("#q_updateform").serializeObject();
+            // if(or(formData.content=='',formData.index=='')){
+            //     return ;
+            // }
+            // $.post($.rjzjh.packurl('/es/indexManager:editIndex/'), formData, function (data) {
+            //     var jsondata = JSON.parse(data);
+            //     $('#addsave').textbox('setValue', replaceAllQuotation(jsondata["add"]));
+            //     $('#diffsave').textbox('setValue', replaceAllQuotation(jsondata["diff"]));
+            // }, 'text');
+            checkIndex();
         });
     });
 

@@ -311,9 +311,36 @@ public class IndexManager {
 		return result;
 	}
 
-	public TextStreamResponse onEditIndex(){
+//	public TextStreamResponse onEditIndex(){
+//		final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
+//		JSONObject result = checkIndexContent(mappingparam.getIndex(),mappingparam.getType(),mappingparam.getContent());
+//		return TapestryAssist.getTextStreamResponse(result.toJSONString());
+//	}
+
+	public TextStreamResponse onUpdateInitCheck(String paramCluster){
 		final Mapping mappingparam = TapestryAssist.getBeanFromPage(Mapping.class, requestGlobals);
-		JSONObject result = checkIndexContent(mappingparam.getIndex(),mappingparam.getType(),mappingparam.getContent());
+		DbInstance temp = ZkClient.getInst().getDateObj(
+				String.format("%s/%s", ZkPath.dbinsts.getRoot(), mappingparam.getDbinst()), DbInstance.class);
+		java.sql.Connection conn = JdbcConnection.getConnectionMyql(temp.getUrl(), temp.getPort(), temp.getUser(),
+				temp.getPwd(), temp.getIsSsh());
+		String[][] cols = MySqlAssit.getCols(conn, mappingparam.getDb(), mappingparam.getTb(), YesOrNo.yes);// TODO
+
+		if (StringUtil.isNotNull(mappingparam.getDb1()) && StringUtil.isNotNull(mappingparam.getTb1())) {
+			String[][] cols1 = MySqlAssit.getCols(conn, mappingparam.getDb1(), mappingparam.getTb1(), YesOrNo.yes);
+			String[] nameAry = CollectionUtil.arrayMerge(String[].class, cols[0], cols1[0]);
+			String[] typeAry = CollectionUtil.arrayMerge(String[].class, cols[1], cols1[1]);
+			cols = new String[][] { nameAry, typeAry };
+		}
+		try {
+			conn.close();
+		} catch (Exception e) {
+		}
+		String contentjson = "{}";
+		if (ArrayUtils.isNotEmpty(cols) && !"_rowkey_".equals(cols[0][0])) {// 有主键
+			contentjson = getOps(paramCluster).packIndexContent(cols[0], cols[1], mappingparam.buildRelaNodes());
+		}
+		//检查新增字段和差异字段
+		JSONObject result = checkIndexContent(mappingparam.getIndex(),mappingparam.getType(),contentjson);
 		return TapestryAssist.getTextStreamResponse(result.toJSONString());
 	}
 
