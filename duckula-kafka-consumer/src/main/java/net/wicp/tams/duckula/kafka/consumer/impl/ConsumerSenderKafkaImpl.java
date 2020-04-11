@@ -1,6 +1,17 @@
 package net.wicp.tams.duckula.kafka.consumer.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.PartitionInfo;
+
 import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.StringUtil;
@@ -8,19 +19,9 @@ import net.wicp.tams.common.others.kafka.KafkaAssitInst;
 import net.wicp.tams.duckula.client.Protobuf3.DuckulaEvent;
 import net.wicp.tams.duckula.client.Protobuf3.DuckulaEvent.Builder;
 import net.wicp.tams.duckula.client.Protobuf3.OptType;
-import net.wicp.tams.duckula.plugin.RuleManager;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
 import net.wicp.tams.duckula.plugin.receiver.consumer.ConsumerSenderAbs;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.PartitionInfo;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /***
  * 用于kafka的转换操作， 可以提供全幂等模式的kafka转换
