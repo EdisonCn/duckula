@@ -1,5 +1,6 @@
 #ops and data
-FROM jetty:9.4.12-jre8-alpine
+#FROM jetty:9.4.12-jre8-alpine
+FROM jetty:9.4-jre8
 # me
 MAINTAINER andy "rjzjh@163.com"
 #
