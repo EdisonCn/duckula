@@ -96,12 +96,11 @@ public class BusiFilter implements IBusi {
 
 	@Override
 	public void doWith(DuckulaPackage duckulaPackage, Rule rule) throws ProjectException {
-		// List<Integer> remove = new ArrayList<>();
 		Map<Integer, Boolean> remove = new HashMap<Integer, Boolean>();
-		// Map<Integer, Boolean> remove = new ConcurrentHashMap<Integer, Boolean>();
-		String db_tb = String.format(FilterPattern.db_tb_formart, duckulaPackage.getEventTable().getDb(),
-				duckulaPackage.getEventTable().getTb());
-
+		//String db_tb = String.format(FilterPattern.db_tb_formart, duckulaPackage.getEventTable().getDb(),
+		//		duckulaPackage.getEventTable().getTb());	
+		String db_tb = String.format(FilterPattern.db_tb_formart, Rule.buildOriRule(rule.getDbPattern()),
+				Rule.buildOriRule(rule.getTbPattern()),rule.getDrds());
 		for (FilterPattern filterPattern : filterRulesMap.keySet()) {
 			if ("col".equals(filterPattern.getGroup())) {// 列过滤后面处理
 				// 列过滤在后面做，且只会存在一个

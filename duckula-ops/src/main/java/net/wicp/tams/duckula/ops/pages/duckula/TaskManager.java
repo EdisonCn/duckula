@@ -557,15 +557,15 @@ public class TaskManager {
 			buff.append("&");
 			JSONObject tempObj = rows.getJSONObject(i);
 			String drds = StringUtil.trimSpace(tempObj.getString("drds"));
-			boolean isDrds = StringUtil.isNotNull(drds);
-			String db = tempObj.getString("db").replaceAll("\\^", "").replaceAll("\\$", "")
-					.replaceAll("\\[0-9\\]\\*", "").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "")
-					.replaceAll("_\\[0-9\\]\\{2,\\}", "");
-			String tb = tempObj.getString("tb").replaceAll("\\^", "").replaceAll("\\$", "")
-					.replaceAll("\\[0-9\\]\\*", "").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "")
-					.replaceAll("_\\[0-9\\]\\{2,\\}", "");
-			buff.append(db + "`");
-			buff.append(tb + "`");
+			boolean isDrds = StringUtil.isNotNull(drds);			
+			//String db = tempObj.getString("db").replaceAll("\\^", "").replaceAll("\\$", "")
+			//		.replaceAll("\\[0-9\\]\\*", "").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "")
+			//		.replaceAll("_\\[0-9\\]\\{2,\\}", "");
+			//String tb = tempObj.getString("tb").replaceAll("\\^", "").replaceAll("\\$", "")
+			//		.replaceAll("\\[0-9\\]\\*", "").replaceAll("_\\[0-9a-zA-Z\\]\\{4\\}", "")
+			//		.replaceAll("_\\[0-9\\]\\{2,\\}", "");
+			buff.append(Rule.buildOriRule(tempObj.getString("db")) + "`");
+			buff.append(Rule.buildOriRule(tempObj.getString("tb")) + "`");
 			if (isDrds) {
 				buff.append(drds + "`");
 				tempObj.remove("drds");

@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -28,8 +29,8 @@ public enum FilterPattern {
 
 	colname("列名过滤", false, "col");
 
-	public static final String db_tb_formart = "%s|%s";
-	public static final String ruleFormat = "duckula.busi.filter.%s.%s.%s.%s.%s=%s";
+	public static final String db_tb_formart = "%s|%s|%s";
+	public static final String ruleFormat = "duckula.busi.filter.%s.%s.%s.%s.%s.%s=%s";
 
 	private final String desc;
 	private final boolean hasColName;// 需要设置列名
@@ -71,6 +72,7 @@ public enum FilterPattern {
 							JSONObject tempjson = new JSONObject();
 							tempjson.put("db", db_tb_ary[0]);
 							tempjson.put("tb", db_tb_ary[1]);
+							tempjson.put("drds", db_tb_ary[2]);
 							tempjson.put("field", field);
 							tempjson.put("index", i);
 							tempjson.put("rule", filterPattern.name());
@@ -92,7 +94,12 @@ public enum FilterPattern {
 			JSONObject jsonObject = ruleJsonAry.getJSONObject(i);
 			FilterRulePo temppo = new FilterRulePo();
 			temppo.setDb(jsonObject.getString("db"));
-			temppo.setTb(jsonObject.getString("tb"));
+			temppo.setTb(jsonObject.getString("tb"));			
+			if(jsonObject.containsKey("drds")&&StringUtils.isNotBlank(jsonObject.getString("drds"))) {
+				temppo.setDrds(jsonObject.getString("drds"));	
+			}else {
+				temppo.setDrds("_");
+			}
 			FilterPattern filterPattern = FilterPattern.valueOf(jsonObject.getString("rule"));
 			temppo.setRule(filterPattern);
 			if (!filterPattern.isHasColName()) {
@@ -107,7 +114,7 @@ public enum FilterPattern {
 		StringBuffer buff = new StringBuffer();
 
 		for (FilterRulePo filterRulePo : tempset) {
-			String tempstr = String.format(ruleFormat, filterRulePo.getDb(), filterRulePo.getTb(),
+			String tempstr = String.format(ruleFormat, filterRulePo.getDb(), filterRulePo.getTb(),filterRulePo.getDrds(),
 					filterRulePo.getField(), filterRulePo.getRule(), filterRulePo.getIndex(),
 					filterRulePo.getRuleValue());
 			buff.append("\n" + tempstr);
@@ -119,6 +126,7 @@ public enum FilterPattern {
 	private static class FilterRulePo implements Comparable<FilterRulePo> {
 		private String db;
 		private String tb;
+		private String drds;
 		private String field;
 		private int index;
 		private FilterPattern rule;
@@ -133,6 +141,10 @@ public enum FilterPattern {
 			int tbDif = this.tb.compareToIgnoreCase(o.getTb());
 			if (tbDif != 0) {
 				return tbDif;
+			}
+			int drdsDif = this.drds.compareToIgnoreCase(o.getDrds());
+			if (drdsDif != 0) {
+				return drdsDif;
 			}
 			int fieldDif = this.field.compareToIgnoreCase(o.getField());
 			if (fieldDif != 0) {
@@ -166,8 +178,8 @@ public enum FilterPattern {
 				log.error("规则解析错误，key最少4个元素");
 				continue;
 			}
-			FilterPattern pattern = FilterPattern.valueOf(tempKeyAry[3]);
-			String db_tb = String.format(db_tb_formart, tempKeyAry[0], tempKeyAry[1]);
+			FilterPattern pattern = FilterPattern.valueOf(tempKeyAry[4]);
+			String db_tb = String.format(db_tb_formart, tempKeyAry[0], tempKeyAry[1],tempKeyAry[2]);
 			Map<String, Set<String>> tempMap = null;
 			Map<String, Map<String, Set<String>>> db_tb_map = returmap.get(pattern);
 			if (db_tb_map == null) {
@@ -180,7 +192,7 @@ public enum FilterPattern {
 			} else {
 				tempMap = db_tb_map.get(db_tb);
 			}
-			String fieldName = tempKeyAry[2];
+			String fieldName = tempKeyAry[3];
 			Set<String> ruleSet = null;
 			if (tempMap.get(fieldName) == null) {
 				ruleSet = new HashSet<String>();
