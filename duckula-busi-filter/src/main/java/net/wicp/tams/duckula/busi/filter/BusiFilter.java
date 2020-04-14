@@ -100,7 +100,7 @@ public class BusiFilter implements IBusi {
 		//String db_tb = String.format(FilterPattern.db_tb_formart, duckulaPackage.getEventTable().getDb(),
 		//		duckulaPackage.getEventTable().getTb());	
 		String db_tb = String.format(FilterPattern.db_tb_formart, Rule.buildOriRule(rule.getDbPattern()),
-				Rule.buildOriRule(rule.getTbPattern()),rule.getDrds());
+				Rule.buildOriRule(rule.getTbPattern()), StringUtil.hasNull(rule.getDrds(),"_"));
 		for (FilterPattern filterPattern : filterRulesMap.keySet()) {
 			if ("col".equals(filterPattern.getGroup())) {// 列过滤后面处理
 				// 列过滤在后面做，且只会存在一个
@@ -226,6 +226,7 @@ public class BusiFilter implements IBusi {
 				}
 				duckulaPackage.setAfters(afterTrue);
 			}
+			duckulaPackage.setError(true);//20200414  Andy.zhou 列处理需要做幂等处理，表明它不是完成的记录
 			duckulaPackage.getEventTable().setCols(cols);
 			duckulaPackage.getEventTable().setColsType(colTypes);
 			duckulaPackage.getEventTable().setColsNum(cols.length);

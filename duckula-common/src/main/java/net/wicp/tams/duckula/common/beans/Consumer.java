@@ -18,6 +18,7 @@ public class Consumer {
 	private int partitionNum;// 分区数，在ops需要查到
 	private String groupId;// 使用哪个groupId，为空则用默认的groupId
 	private Long startPosition;// 从哪个位置开始监听
+	private YesOrNo needAllCol = YesOrNo.no;//是否需要全量字段处理，出现在做了列过滤后，又想要在ES做全字段索引等
 	private String rules;
 	private YesOrNo run = YesOrNo.no;// 是否运行此任务,默认为false不运行,仅配置好,不做运行处理.
 	//

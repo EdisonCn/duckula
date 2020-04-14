@@ -8,7 +8,7 @@
 <body>
    <r:query id="q"  qBlock="query" queryUrl="/es/consumerManager:query" uBlock="save"   saveUrl="/es/consumerManager:save" deleteUrl="/es/consumerManager:del" opFormatter="showopt" 
         columns="[[{field:'id',width:350,title:'id'},{field:'taskOnlineId',width:200,title:'在线任务'},{field:'topic',width:150,title:'topic'},{field:'groupId',width:100,title:'组ID'},{field:'startPosition',width:100,title:'监听位置'},{field:'busiPlugin',width:150,title:'业务插件'},${ColDifferent},{field:'op',width:350,title:'操作'}]]" 
-        dialogStyle="width:900px;height:600px;" initAddHandle="initAdd" initSaveHandle="initUpdate"  saveCheckHandle="saveCheck" pagination="false"/>
+        dialogStyle="width:900px;height:650px;" initAddHandle="initAdd" initSaveHandle="initUpdate"  saveCheckHandle="saveCheck" pagination="false"/>
    <t:block id="query">
        <table class="frame_table_list_4">
 		 <tr>
@@ -100,7 +100,15 @@
 			 	        <r:combobox id="middlewareInst_save" name="middlewareInst" textField="text" valueField="value" url="/es/indexManager:queryMiddlewareTypeAll" parent="middlewareType_save" required="false"></r:combobox>
 			 	     </td>
 			      </tr>
-			      
+			      <tr>
+			         <td class="frame_table_list_2_righttext">需要全字段</td>
+			         <td>
+			            <r:comboboxenum id="needAllCol_save"  name="needAllCol" enumClass="net.wicp.tams.common.constant.dic.YesOrNo" required="false"></r:comboboxenum>
+	                 </td>
+			         <td class="frame_table_list_2_righttext"></td>
+			         <td>		            
+	                 </td>
+			      </tr>
 			     <tr>
 			         <td class="frame_table_list_2_righttext" name="trdb">CPU</td>
 			         <td name="trdb">
@@ -110,8 +118,7 @@
 			         <td>
 			            <r:numberbox  name="memory" style="width:60px;" min="512" max="4096" missingMessage="1024Mi为1G" required="true"/> Mi
 	                 </td>
-			      </tr>
-			      
+			      </tr>			      
 			       <tr name="showmodel">
 			        <td colspan="4">
 				        <table id="dg" title="规则编辑" style="width:98%;height:160px"

@@ -333,7 +333,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                 PreparedStatement preparedStatement = connection.prepareStatement(build.toString());
                 JdbcAssit.setPreParam(preparedStatement, keyValues);
                 ResultSet rs = preparedStatement.executeQuery();
-                if (isIde) {
+                if (isIde||YesOrNo.yes==this.consumer.getNeedAllCol()) {
                     if (rs.next()) {
                         for (String colName : colsMap.get(keymapkey)) {
                             try {
