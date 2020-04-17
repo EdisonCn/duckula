@@ -110,20 +110,28 @@ public class DuckulaContext {
 	 * @param db
 	 * @param tb
 	 * @param time
+	 * @param  colNumTrue 真实的字段数
 	 * @return
 	 */
-	public ColHis ValidKey(String db, String tb, long time) {
+	public ColHis ValidKey(String db, String tb, long time,int colNumTrue) {
 		String key = String.format("%s|%s", db, tb).toLowerCase();
 		if (colsMap.containsKey(key)) {
 			SortedSet<ColHis> hiss = colsMap.get(key);
 			for (ColHis colHis : hiss) {
-				if (colHis.getTime() < time) {
+				//小于时间time且字段个数能合适，有可能更改字段时没有监听到
+				if (colHis.getTime() <= time&&colNumTrue==colHis.getCols().length) {
 					return colHis;
 				}
 			}
-			// 兼容旧任务,不般不会执行
-			// throw new RuntimeException("没有可用的col信息。");//由于第1条时间设置为-1,所以它一般不会被执行
-			return addCols(db, tb, -1);
+			//没有找到合适的cols,再去数据库查最新的cols
+			ColHis newcols = addCols(db, tb, time);
+			if(colNumTrue==newcols.getCols().length) {
+				return addCols(db, tb, time);
+			}else {
+				log.error("The appropriate column name could not be found!==============没有合适的列名=====================");
+				LoggerUtil.exit(JvmStatus.s15);//退出Java
+				return null;
+			}
 		} else {
 			//return addCols(db, tb, getBeginWhen());
 			return addCols(db, tb, -1);

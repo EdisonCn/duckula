@@ -131,6 +131,9 @@
 							<busis>
 								<param>duckula-busi-filter</param>
 							</busis>
+							<localData>
+							      /conf/duckula
+							</localData>
 							<isall>
 								true
 							</isall>

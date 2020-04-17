@@ -153,7 +153,7 @@ public abstract class BaseLogFetcher {
 		eventTable.setColsNum(event.getTable().getColumnCnt());
 		// 设置列名
 		ColHis colhis = Main.context.ValidKey(event.getTable().getDbName(), event.getTable().getTableName(),
-				event.getWhen());
+				event.getWhen(),event.getTable().getColumnCnt());
 		eventTable.setCols(colhis.getCols());
 
 		ColumnInfo[] colsColumnInfo = event.getTable().getColumnInfo();
