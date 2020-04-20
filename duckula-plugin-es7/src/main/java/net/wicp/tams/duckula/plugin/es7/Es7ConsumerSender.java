@@ -106,7 +106,8 @@ public class Es7ConsumerSender extends ConsumerSenderAbs<Builder> {
             // 找id
             String idstr = DuckulaAssit.getValueStr(duckulaEvent, duckulaEvent.getCols(0));// TODO 子表暂时使用第一个字段， 后续需要改为配置
             // String idstr = DuckulaAssit.getValueStr(duckulaEvent, keyName);
-            esObjBuilder.setId(String.format("%s:%s", duckulaEvent.getTb(), idstr));// 有可能与主表id相同把主表的ID冲掉
+            //202020420 Andy，如果是drds类型的，需要去除具体的随机码信息 
+            esObjBuilder.setId(String.format("%s:%s", Rule.buildOriRule(rule.getTbPattern()), idstr));// 有可能与主表id相同把主表的ID冲掉
             if (StringUtils.isBlank(parentId)) {// 关联关系没有parent
                 errorlog.error(esObjBuilder.toString());// 打错误日志跳过
             } else {

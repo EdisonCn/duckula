@@ -112,6 +112,10 @@ public class DumpMain {
 				String dumpIdTemp = dbtb[0] + "-" + dbtb[1];
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.db", dumpIdTemp), dbtb[0]);
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tb", dumpIdTemp), dbtb[1]);
+				//模式
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.dbOri", dumpIdTemp), Rule.buildOriRule(rule.getDbPattern()));
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tbOri", dumpIdTemp), Rule.buildOriRule(rule.getTbPattern()));
+				
 				dumpIds.add(dumpIdTemp);
 			}
 		}

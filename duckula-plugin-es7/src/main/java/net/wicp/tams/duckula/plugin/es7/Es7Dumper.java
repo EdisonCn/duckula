@@ -134,7 +134,7 @@ public class Es7Dumper implements IBusiSender<DumpEvent> {
                     String relaName = MappingBean.getRelaName(relaObjMap.get(curRule), tablename,curRule.getTbLength());
                     String[] relaNameAry = relaName.split(":");
                     String parentId = datamap.get(relaNameAry[1]);
-                    esObjBuilder.setId(String.format("%s:%s", tablename, idstr));// 有可能与主表id相同把主表的ID冲掉
+                    esObjBuilder.setId(String.format("%s:%s", dataBuilders.getDump().getTbOri(), idstr));// 有可能与主表id相同把主表的ID冲掉
                     if (StringUtils.isBlank(parentId)) {// 关联关系没有parent
                         errorlog.error(esObjBuilder.toString());// 打错误日志跳过
                         continue;
