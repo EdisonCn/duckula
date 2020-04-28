@@ -21,6 +21,9 @@ public class Consumer {
 	private YesOrNo needAllCol = YesOrNo.no;//是否需要全量字段处理，出现在做了列过滤后，又想要在ES做全字段索引等
 	private String rules;
 	private YesOrNo run = YesOrNo.no;// 是否运行此任务,默认为false不运行,仅配置好,不做运行处理.
+	
+	private String drdsDbInst;// 数据库实例名,用于drds反查配置
+	
 	//
 //    private SenderConsumerEnum senderConsumerEnum; // 内置发送者
 //    private ConsumerSenderPluginEnum pluginSender; // 插件发送者

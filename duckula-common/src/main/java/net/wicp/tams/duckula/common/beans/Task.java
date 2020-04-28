@@ -37,6 +37,12 @@ public class Task {
 	private String defaultDb;
 	private String imageVersion = Conf.get("duckula.task.image.tag"); // task的image版本
 	private String namespace = Conf.get("common.kubernetes.apiserver.namespace.default"); // k8s的命名空间
+	
+	//private String colNames;//要附加的字段名
+	//private String addPropsJsonStr;//要附加的属性值
+	
+
+	
 
 	public String getImageVersion() {
 		return StringUtil.isNull(this.imageVersion) ? Conf.get("duckula.task.image.tag") : this.imageVersion;

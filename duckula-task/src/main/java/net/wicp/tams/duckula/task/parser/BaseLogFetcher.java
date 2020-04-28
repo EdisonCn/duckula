@@ -8,14 +8,18 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
+
+import com.alibaba.fastjson.JSON;
 
 import io.thekraken.grok.api.Match;
 import io.thekraken.grok.api.exception.GrokException;
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.apiext.GrokObj;
 import net.wicp.tams.common.apiext.PwdUtil;
+import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.binlog.parser.LogEvent;
 import net.wicp.tams.common.binlog.parser.event.GtidLogEvent;
 import net.wicp.tams.common.binlog.parser.event.QueryLogEvent;
@@ -31,6 +35,7 @@ import net.wicp.tams.duckula.common.beans.ColHis;
 import net.wicp.tams.duckula.common.beans.Pos;
 import net.wicp.tams.duckula.plugin.beans.EventTable;
 import net.wicp.tams.duckula.plugin.beans.Rule;
+import net.wicp.tams.duckula.plugin.constant.RuleItem;
 import net.wicp.tams.duckula.task.Main;
 import net.wicp.tams.duckula.task.bean.EventPackage;
 import net.wicp.tams.duckula.task.bean.GtidBean;
@@ -132,6 +137,9 @@ public abstract class BaseLogFetcher {
 		EventPackage eventDbsncBuild = producer.getNextBuild();
 		eventDbsncBuild.setXid(-1l);
 		eventDbsncBuild.setRule(rule);
+		if(rule.getTbPattern().contains("invoice_seller_main")&&StringUtil.isNotNull(rule.getItems().get(RuleItem.colName))) {
+			System.out.println("aaaa");
+		}
 
 		// 组装位点信息
 		Pos pos = new Pos();
@@ -207,6 +215,7 @@ public abstract class BaseLogFetcher {
 		eventDbsncBuild.setBefores(beforeArray);
 		eventDbsncBuild.setEventTable(eventTable);
 		eventDbsncBuild.setRowsNum(rows);
+		
 		producer.sendMsg(eventDbsncBuild);
 		Main.metric.meter_parser_event.mark(rows);
 		Main.metric.counter_ringbuff_pack.inc();// 包数

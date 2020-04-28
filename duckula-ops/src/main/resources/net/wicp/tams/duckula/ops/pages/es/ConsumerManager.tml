@@ -105,8 +105,9 @@
 			         <td>
 			            <r:comboboxenum id="needAllCol_save"  name="needAllCol" enumClass="net.wicp.tams.common.constant.dic.YesOrNo" required="false"></r:comboboxenum>
 	                 </td>
-			         <td class="frame_table_list_2_righttext"></td>
-			         <td>		            
+			         <td class="frame_table_list_2_righttext">drds实例</td>
+			         <td>
+			            <r:combobox id="drdsDbInst_save" name="drdsDbInst" url="/duckula/taskManager:queryInst"  width="150"></r:combobox> 用于drds的反查
 	                 </td>
 			      </tr>
 			     <tr>
