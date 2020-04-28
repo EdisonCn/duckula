@@ -1,5 +1,24 @@
 package net.wicp.tams.duckula.kafka.consumer;
 
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.LoggerUtil;
@@ -15,24 +34,11 @@ import net.wicp.tams.duckula.common.ConfUtil;
 import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.Consumer;
-import net.wicp.tams.duckula.common.beans.SenderConsumerEnum;
 import net.wicp.tams.duckula.common.beans.Task;
 import net.wicp.tams.duckula.common.constant.CommandType;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
 import net.wicp.tams.duckula.kafka.consumer.impl.KafkaConsumer;
 import net.wicp.tams.duckula.kafka.consumer.jmx.ConsumerControl;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.curator.framework.recipes.locks.InterProcessMutex;
-
-import javax.management.*;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class MainConsumer {
     static {
@@ -42,7 +48,6 @@ public class MainConsumer {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MainConsumer.class);
     public static ConsumerGroup metric;
 
-    @SuppressWarnings("unchecked")
     public void init(String[] args) throws SQLException {
         Thread.currentThread().setName("Consumer-main");
         if (ArrayUtils.isEmpty(args)) {

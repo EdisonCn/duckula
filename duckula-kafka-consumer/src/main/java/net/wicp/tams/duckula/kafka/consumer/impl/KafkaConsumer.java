@@ -1,5 +1,21 @@
 package net.wicp.tams.duckula.kafka.consumer.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+
 import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -8,11 +24,17 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.Plugin;
 import net.wicp.tams.common.Result;
-import net.wicp.tams.common.apiext.*;
+import net.wicp.tams.common.apiext.CollectionUtil;
+import net.wicp.tams.common.apiext.IOUtil;
+import net.wicp.tams.common.apiext.LoggerUtil;
+import net.wicp.tams.common.apiext.StringUtil;
+import net.wicp.tams.common.apiext.TarUtil;
+import net.wicp.tams.common.apiext.TimeAssist;
 import net.wicp.tams.common.apiext.jdbc.JdbcAssit;
 import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
 import net.wicp.tams.common.constant.JvmStatus;
@@ -29,30 +51,22 @@ import net.wicp.tams.duckula.client.Protobuf3.DuckulaEventIdempotent;
 import net.wicp.tams.duckula.client.Protobuf3.IdempotentEle;
 import net.wicp.tams.duckula.client.Protobuf3.OptType;
 import net.wicp.tams.duckula.common.ConfUtil;
+import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.Consumer;
+import net.wicp.tams.duckula.common.beans.DbInstance;
 import net.wicp.tams.duckula.common.beans.SenderConsumerEnum;
 import net.wicp.tams.duckula.common.beans.Task;
 import net.wicp.tams.duckula.common.constant.PluginType;
+import net.wicp.tams.duckula.common.constant.ZkPath;
 import net.wicp.tams.duckula.kafka.consumer.MainConsumer;
+import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.RuleManager;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
-import net.wicp.tams.duckula.plugin.PluginAssit;
 import net.wicp.tams.duckula.plugin.receiver.consumer.ConsumerSenderAbs;
 import net.wicp.tams.duckula.plugin.receiver.consumer.IBusiConsumer;
 import net.wicp.tams.duckula.plugin.receiver.consumer.IConsumerSender;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.*;
 
 @Slf4j
 public class KafkaConsumer<T> implements IConsumer<byte[]> {
@@ -195,7 +209,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                     log.error("解析失败", e1);
                     continue;// 不处理此数据
                 }
-                duckulaEventToDatas(datas, duckulaEvent, rule);
+                duckulaEventToDatas(datas, duckulaEvent, rule,null);
             } else {
                 DuckulaEventIdempotent duckulaEventIdempotent = null;
                 try {
@@ -210,7 +224,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                 duckulaEventBuilder.setOptType(duckulaEventIdempotent.getOptType());
                 duckulaEventBuilder.addAllCols(duckulaEventIdempotent.getKeyNamesList());
                 duckulaEventBuilder.addAllColsType(duckulaEventIdempotent.getKeyTypesList());
-                duckulaEventBuilder.setIsError(true);
+                duckulaEventBuilder.setIsError(true);                
                 for (IdempotentEle dempotentEle : duckulaEventIdempotent.getValuesList()) {
                     Builder tempEventBuild = duckulaEventBuilder.clone();
                     for (int i = 0; i < dempotentEle.getKeyValuesCount(); i++) {
@@ -221,8 +235,10 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                             tempEventBuild.putAfter(duckulaEventBuilder.getCols(i), keyValues);
                         }
                     }
-                    duckulaEventToDatas(datas, tempEventBuild.build(), rule);
+                    duckulaEventToDatas(datas, tempEventBuild.build(), rule,duckulaEventIdempotent.getAddProp());
                 }
+                
+                
             }
 
         }
@@ -287,8 +303,9 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
      * @param datas        要还回的转换数据
      * @param duckulaEvent 原始数据
      * @param rule         规则
+     * @param  addProp      附加信息，来自task,用于反查
      */
-    private void duckulaEventToDatas(List<T> datas, DuckulaEvent duckulaEvent, Rule rule) {
+    private void duckulaEventToDatas(List<T> datas, DuckulaEvent duckulaEvent, Rule rule,String addProp) {
         try {
             if (rule == null) {
                 rule = ruleManager.findRule(duckulaEvent.getDb(), duckulaEvent.getTb());
@@ -324,12 +341,44 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                     datamap.put(primarysMap.get(keymapkey)[i], String.valueOf(keyValues[i]));
                 }
             } else if (duckulaEvent.getIsError()) {
-                StringBuilder build = new StringBuilder();
-                build.append("select * from " + keymapkey + " where ");
+                StringBuilder build = new StringBuilder();                
+               // if(StringUtil.isNotNull(rule.getItems().get(RuleItem.addProp))) {//暂定drds
+                String scanstr="";
+                Connection connection = null;
+                if(StringUtil.isNotNull(addProp)) {
+                	//通过SQL路由失败
+                	//DbInstance dbInstance = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(consumer.getDrdsDbInst())),
+            		//		DbInstance.class);               	
+                	//int lastIndexOf = duckulaEvent.getDb().lastIndexOf("_");
+                	//int scandb = Integer.parseInt(duckulaEvent.getDb().substring(lastIndexOf+1));
+                	//scanstr= "/*+TDDL:scan(node='"+scandb+"')*/";
+                	//Properties props=new Properties();
+                	//props.put("host", dbInstance.getUrl());
+                	//props.put("username", dbInstance.getUser());
+                	//props.put("password", dbInstance.getPwd());
+                	//props.put("port", dbInstance.getPort());               	
+                	//connection = DruidAssit.getDataSourceNoConf("drds", props).getConnection();
+                	String sourceKey="drds:"+addProp;
+                	if(!DruidAssit.getDataSourceMap().containsKey(sourceKey)) {
+                		DbInstance dbInstance = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(addProp)),
+                				DbInstance.class);
+                    	Properties props=new Properties();
+                    	props.put("host", dbInstance.getUrl());
+                    	props.put("username", dbInstance.getUser());
+                    	props.put("password", dbInstance.getPwd());
+                    	props.put("port", dbInstance.getPort());               	
+                    	connection = DruidAssit.getDataSourceNoConf(sourceKey, props).getConnection();   
+                	}else {
+                		connection = DruidAssit.getDataSource(sourceKey).getConnection();
+                	}
+                	
+                }else {
+                	connection = DruidAssit.getConnection();
+                }
+                build.append("select "+scanstr+" * from " + keymapkey + " where ");
                 for (int i = 0; i < primarysMap.get(keymapkey).length; i++) {
                     build.append(String.format(" %s=?", primarysMap.get(keymapkey)[i]));
                 }
-                Connection connection = DruidAssit.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(build.toString());
                 JdbcAssit.setPreParam(preparedStatement, keyValues);
                 ResultSet rs = preparedStatement.executeQuery();

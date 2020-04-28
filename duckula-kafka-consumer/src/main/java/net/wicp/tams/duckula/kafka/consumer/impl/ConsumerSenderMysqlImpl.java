@@ -1,14 +1,23 @@
 package net.wicp.tams.duckula.kafka.consumer.impl;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
 import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Result;
-import net.wicp.tams.common.apiext.LoggerUtil;
 import net.wicp.tams.common.apiext.jdbc.JdbcData;
 import net.wicp.tams.common.apiext.jdbc.JdbcDatas;
 import net.wicp.tams.common.apiext.jdbc.JdbcDatas.Builder;
 import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
-import net.wicp.tams.common.constant.JvmStatus;
 import net.wicp.tams.common.jdbc.DruidAssit;
 import net.wicp.tams.duckula.client.Protobuf3.DuckulaEvent;
 import net.wicp.tams.duckula.common.ZkClient;
@@ -17,11 +26,6 @@ import net.wicp.tams.duckula.common.constant.ZkPath;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
 import net.wicp.tams.duckula.plugin.receiver.consumer.ConsumerSenderAbs;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
 
 @Slf4j
 public class ConsumerSenderMysqlImpl extends ConsumerSenderAbs<Builder> {
@@ -95,33 +99,51 @@ public class ConsumerSenderMysqlImpl extends ConsumerSenderAbs<Builder> {
             if (curkey.equals(tempkey)) {
                 sendBuilder.addAllDatas(builder.getDatasList());
             } else {
-                send(sendBuilder);
+                Result sendRs = send(sendBuilder);
+                if(!sendRs.isSuc()) {
+                	return sendRs;
+                }
                 sendBuilder = builder;
                 curkey = tempkey;
                 continue;
             }
         }
         if (sendBuilder != null) {
-            send(sendBuilder);
+            Result sendRs = send(sendBuilder);
+            if(!sendRs.isSuc()) {
+            	return sendRs;
+            }
         }
         return Result.getSuc();
     }
 
-    private void send(Builder sendBuilder) {
-        try {
+    private Result send(Builder sendBuilder) {
+    	Connection connection =null;
+    	try {
             String key = String.format("%s.%s", sendBuilder.getDb(), sendBuilder.getTb());
             DataSource dataSource = dsmap.get(ruleMaToDb.get(key));
-            Connection connection = dataSource.getConnection();
+            connection = dataSource.getConnection();
             Result temp = MySqlAssit.dataChange(connection, sendBuilder.build());
             if (!temp.isSuc()) {
                 log.error("同步错误,原因：{}", temp.getMessage());
-                LoggerUtil.exit(JvmStatus.s15);
+                //LoggerUtil.exit(JvmStatus.s15);
+                connection.close();
+                return Result.getError("同步错误,原因："+temp.getMessage());
             }
             connection.close();
         } catch (SQLException e) {
             log.error("发送失败", e);
-            LoggerUtil.exit(JvmStatus.s15);
-        }
+            //LoggerUtil.exit(JvmStatus.s15);
+            return Result.getError("发送失败："+e.getMessage());
+        }finally {
+			if(connection!=null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+				}
+			}
+		}
+        return Result.getSuc();
     }
 
     @Override
