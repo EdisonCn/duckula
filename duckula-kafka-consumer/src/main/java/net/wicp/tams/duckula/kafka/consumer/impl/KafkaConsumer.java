@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +76,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
     protected final IConsumerSender<T> sender;
     private final RuleManager ruleManager;
     protected final IBusiConsumer<T> busiEs;
-    protected Connection connection = DruidAssit.getConnection();// TODO 每线程一个连接
+    //protected Connection connection = DruidAssit.getConnection();// TODO 每线程一个连接
     protected Map<String, String[]> primarysMap = new HashMap<>();
     protected Map<String, String[]> colsMap = new HashMap<>();
 
@@ -313,6 +314,9 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                     return;
                 }
             }
+            
+           Connection connection = getConn(addProp);
+            
             String keymapkey = String.format("%s.%s", duckulaEvent.getDb(), duckulaEvent.getTb());
             if (primarysMap.get(keymapkey) == null) {
                 String keyColName = rule.getItems().get(RuleItem.key);
@@ -344,37 +348,6 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
                 StringBuilder build = new StringBuilder();                
                // if(StringUtil.isNotNull(rule.getItems().get(RuleItem.addProp))) {//暂定drds
                 String scanstr="";
-                Connection connection = null;
-                if(StringUtil.isNotNull(addProp)) {
-                	//通过SQL路由失败
-                	//DbInstance dbInstance = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(consumer.getDrdsDbInst())),
-            		//		DbInstance.class);               	
-                	//int lastIndexOf = duckulaEvent.getDb().lastIndexOf("_");
-                	//int scandb = Integer.parseInt(duckulaEvent.getDb().substring(lastIndexOf+1));
-                	//scanstr= "/*+TDDL:scan(node='"+scandb+"')*/";
-                	//Properties props=new Properties();
-                	//props.put("host", dbInstance.getUrl());
-                	//props.put("username", dbInstance.getUser());
-                	//props.put("password", dbInstance.getPwd());
-                	//props.put("port", dbInstance.getPort());               	
-                	//connection = DruidAssit.getDataSourceNoConf("drds", props).getConnection();
-                	String sourceKey="drds:"+addProp;
-                	if(!DruidAssit.getDataSourceMap().containsKey(sourceKey)) {
-                		DbInstance dbInstance = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(addProp)),
-                				DbInstance.class);
-                    	Properties props=new Properties();
-                    	props.put("host", dbInstance.getUrl());
-                    	props.put("username", dbInstance.getUser());
-                    	props.put("password", dbInstance.getPwd());
-                    	props.put("port", dbInstance.getPort());               	
-                    	connection = DruidAssit.getDataSourceNoConf(sourceKey, props).getConnection();   
-                	}else {
-                		connection = DruidAssit.getDataSource(sourceKey).getConnection();
-                	}
-                	
-                }else {
-                	connection = DruidAssit.getConnection();
-                }
                 build.append("select "+scanstr+" * from " + keymapkey + " where ");
                 for (int i = 0; i < primarysMap.get(keymapkey).length; i++) {
                     build.append(String.format(" %s=?", primarysMap.get(keymapkey)[i]));
@@ -440,6 +413,41 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
             throw new ProjectExceptionRuntime(ExceptAll.duckula_es_formate);
         }
     }
+
+	private Connection getConn(String addProp) throws SQLException {
+		Connection connection = null;
+		if(StringUtil.isNotNull(addProp)) {
+			//通过SQL路由失败
+			//DbInstance dbInstance = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(consumer.getDrdsDbInst())),
+			//		DbInstance.class);               	
+			//int lastIndexOf = duckulaEvent.getDb().lastIndexOf("_");
+			//int scandb = Integer.parseInt(duckulaEvent.getDb().substring(lastIndexOf+1));
+			//scanstr= "/*+TDDL:scan(node='"+scandb+"')*/";
+			//Properties props=new Properties();
+			//props.put("host", dbInstance.getUrl());
+			//props.put("username", dbInstance.getUser());
+			//props.put("password", dbInstance.getPwd());
+			//props.put("port", dbInstance.getPort());               	
+			//connection = DruidAssit.getDataSourceNoConf("drds", props).getConnection();
+			String sourceKey="drds:"+addProp;
+			if(!DruidAssit.getDataSourceMap().containsKey(sourceKey)) {
+				DbInstance dbInstance = JSONObject.toJavaObject(ZkClient.getInst().getZkData(ZkPath.dbinsts.getPath(addProp)),
+						DbInstance.class);
+		    	Properties props=new Properties();
+		    	props.put("host", dbInstance.getUrl());
+		    	props.put("username", dbInstance.getUser());
+		    	props.put("password", dbInstance.getPwd());
+		    	props.put("port", dbInstance.getPort());               	
+		    	connection = DruidAssit.getDataSourceNoConf(sourceKey, props).getConnection();   
+			}else {
+				connection = DruidAssit.getDataSource(sourceKey).getConnection();
+			}
+			
+		}else {
+			connection = DruidAssit.getConnection();
+		}
+		return connection;
+	}
 
     /**
      * 获取消息数据保存新的文件
