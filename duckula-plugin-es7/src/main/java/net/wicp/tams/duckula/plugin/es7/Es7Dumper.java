@@ -21,6 +21,8 @@ import net.wicp.tams.common.es.client.singleton.ESClientOnlyOne;
 import net.wicp.tams.common.es.client.threadlocal.EsClientThreadlocal;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -47,9 +49,9 @@ public class Es7Dumper implements IBusiSender<DumpEvent> {
     private static final org.slf4j.Logger errorlog = org.slf4j.LoggerFactory.getLogger("errorBinlog");
     // private JSONObject relaObj;// relaObj.isEmpty 是已初始化但没有关联关系的索引
     private volatile boolean isInit = false;
-    private final Map<String, Rule> ruleMap = new HashMap<String, Rule>();
-    private Map<Rule, JSONObject> relaObjMap = new HashMap<Rule, JSONObject>();
-    private List<Rule> rulesList;
+    private static final Map<String, Rule> ruleMap = new HashMap<String, Rule>();
+    private static Map<Rule, JSONObject> relaObjMap = new HashMap<Rule, JSONObject>();
+    private static List<Rule> rulesList;
 
     /**
      * 需要的参数：rules、middlewareType、middlewareInst
@@ -59,17 +61,21 @@ public class Es7Dumper implements IBusiSender<DumpEvent> {
         if (isInit) {
             return;
         }
-        String rules = params.getString("rules");
-        rulesList = Rule.buildRules(rules);
+        if(CollectionUtils.isEmpty(rulesList)) {
+        	 String rules = params.getString("rules");
+             rulesList = Rule.buildRules(rules);
+        }
         Properties configMiddleware = configMiddleware(params.getString("middlewareType"),
                 params.getString("middlewareInst"));
         Conf.overProp(configMiddleware);
 
         for (Rule rule : rulesList) {
+        	if(relaObjMap.containsKey(rule)) {
+        		continue;
+        	}
             JSONObject relaObj = null;
             Map<String, Propertie> queryMapping_tc_all = ESClientOnlyOne.getInst().getESClient().queryMapping_tc_all(
-                    rule.getItems().get(RuleItem.index),
-                    StringUtil.hasNull(rule.getItems().get(RuleItem.type), "_doc"));
+                    rule.getItems().get(RuleItem.index));
             if (queryMapping_tc_all.containsKey(Conf.get("common.es.assit.rela.key"))) {//含有join
                 relaObj = queryMapping_tc_all.get(Conf.get("common.es.assit.rela.key")).getRelations();
             } else {

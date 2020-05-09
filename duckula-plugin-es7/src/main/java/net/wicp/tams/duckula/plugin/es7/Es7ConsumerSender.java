@@ -51,7 +51,7 @@ public class Es7ConsumerSender extends ConsumerSenderAbs<Builder> {
         // 查看index是否有关联关系，一般有2张表肯定有关联关系
         if (!relaMapToEs.containsKey(key)) {
             ESClient esClient = EsClientThreadlocal.createPerThreadEsClient();
-            Map<String, Propertie> queryMapping_tc_all = esClient.queryMapping_tc_all(index, type);
+            Map<String, Propertie> queryMapping_tc_all = esClient.queryMapping_tc_all(index);
             String relationKey = StringUtil.hasNull(Conf.get("common.es.assit.rela.key"),"tams_relations");
             if (queryMapping_tc_all.containsKey(relationKey)) {
                 JSONObject relations = queryMapping_tc_all.get(relationKey).getRelations();
