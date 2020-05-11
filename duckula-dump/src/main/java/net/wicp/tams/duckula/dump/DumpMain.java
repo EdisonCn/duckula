@@ -101,7 +101,10 @@ public class DumpMain {
 		log.info("----------------------处理原文件配置-------------------------------------");
 		Properties newprops = Conf.replacePre("common.binlog.alone.dump.global.pool",
 				"common.jdbc.datasource." + MainDump.globleDatasourceName);
-		Conf.overProp(newprops);
+		//设置最大联接数，用于drds较多表的情况
+		newprops.put("common.jdbc.datasource.default.maxActive", dump.getConnectMaxNum());
+		log.info("the max connection:{}",dump.getConnectMaxNum());
+		Conf.overProp(newprops);	
 		Connection conn = DruidAssit.getConnection(MainDump.globleDatasourceName);
 		Properties dumpProps = new Properties();
 		List<String> dumpIds = new ArrayList<String>();

@@ -44,6 +44,8 @@ public class Dump {
 
 	private String imageVersion;
 	private String namespace;
+	
+	private int connectMaxNum=200;//连接池最大连接数,默认200
 
 	private final List<Rule> ruleList = new ArrayList<>();
 

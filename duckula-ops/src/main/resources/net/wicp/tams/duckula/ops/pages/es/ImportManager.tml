@@ -8,7 +8,7 @@
 <body>
    <r:query id="q"  qBlock="query" queryUrl="/es/importManager:query" uBlock="save"   saveUrl="/es/importManager:save" deleteUrl="/es/importManager:del" opFormatter="showopt" 
         columns="[[{field:'id',width:350,title:'id'},{field:'busiPlugin',width:150,title:'业务插件'},${ColDifferent},{field:'op',width:350,title:'操作'}]]" 
-        dialogStyle="width:800px;height:600px;" initAddHandle="initAdd" initSaveHandle="initUpdate" saveCheckHandle="saveCheck" pagination="false"/>
+        dialogStyle="width:800px;height:650px;" initAddHandle="initAdd" initSaveHandle="initUpdate" saveCheckHandle="saveCheck" pagination="false"/>
    <t:block id="query">
        <table class="frame_table_list_4">
 		 <tr>
@@ -110,6 +110,15 @@
 			         <td class="frame_table_list_2_righttext">k8s内存</td>
 			         <td>
 			            <r:numberbox  name="memory" style="width:60px;" min="4096" max="16384" missingMessage="1024Mi为1G" required="true"/> Mi
+	                 </td>
+			      </tr>
+			       <tr>
+			         <td class="frame_table_list_2_righttext" name="trdb">最大连接</td>
+			         <td name="trdb">
+			            <r:numberbox  name="connectMaxNum" style="width:60px;" min="20" max="1000" missingMessage="drds分库分表要注意" required="false"/>
+	                 </td>
+			         <td class="frame_table_list_2_righttext"></td>
+			         <td>
 	                 </td>
 			      </tr>
 			      <tr name="showmodel">
