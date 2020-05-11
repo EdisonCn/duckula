@@ -136,10 +136,7 @@ public abstract class BaseLogFetcher {
 		Main.metric.meter_parser_pack_row.mark();
 		EventPackage eventDbsncBuild = producer.getNextBuild();
 		eventDbsncBuild.setXid(-1l);
-		eventDbsncBuild.setRule(rule);
-		if(rule.getTbPattern().contains("invoice_seller_main")&&StringUtil.isNotNull(rule.getItems().get(RuleItem.colName))) {
-			System.out.println("aaaa");
-		}
+		eventDbsncBuild.setRule(rule);		
 
 		// 组装位点信息
 		Pos pos = new Pos();
