@@ -437,7 +437,8 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 		    	props.put("host", dbInstance.getUrl());
 		    	props.put("username", dbInstance.getUser());
 		    	props.put("password", dbInstance.getPwd());
-		    	props.put("port", dbInstance.getPort());               	
+		    	props.put("port", dbInstance.getPort()); 
+		    	props.put("urlparam", "zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false"); 
 		    	connection = DruidAssit.getDataSourceNoConf(sourceKey, props).getConnection();   
 			}else {
 				connection = DruidAssit.getDataSource(sourceKey).getConnection();
