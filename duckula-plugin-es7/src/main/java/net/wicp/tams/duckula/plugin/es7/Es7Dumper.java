@@ -169,10 +169,10 @@ public class Es7Dumper implements IBusiSender<DumpEvent> {
 			for (BulkItemResponse bulkItemResponse : retObjs) {
 				if (bulkItemResponse.isFailed()) {
 					dataBuilders.getDump().getMetric().counter_send_error.inc();
-					log.error(bulkItemResponse.getId());// TODO 错误处理
+					log.error(bulkItemResponse.getId());// TODO 错误处理					
 				}
 			}
-			LoggerUtil.exit(JvmStatus.s15);
+			throw new RuntimeException("发送ES失败,由sendHander重试");
 		}
 	}
 
