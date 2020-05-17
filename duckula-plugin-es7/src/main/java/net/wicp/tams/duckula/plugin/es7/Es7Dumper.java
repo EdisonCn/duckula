@@ -19,6 +19,7 @@ import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.common.apiext.LoggerUtil;
+import net.wicp.tams.common.binlog.dump.bean.Dump;
 import net.wicp.tams.common.binlog.dump.bean.DumpEvent;
 import net.wicp.tams.common.binlog.dump.listener.IBusiSender;
 import net.wicp.tams.common.constant.JvmStatus;
@@ -92,7 +93,7 @@ public class Es7Dumper implements IBusiSender<DumpEvent> {
 
 	// dumpId是指配置文件中的dump
 	@Override
-	public void init(String dumpId) {
+	public void init(Dump dump) {
 		return;
 	}
 
