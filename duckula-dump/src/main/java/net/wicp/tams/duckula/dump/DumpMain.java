@@ -77,6 +77,8 @@ public class DumpMain {
 		props.put("common.binlog.alone.dump.global.pool.port", String.valueOf(dbInstance.getPort()));
 		props.put("common.binlog.alone.dump.global.pool.username", dbInstance.getUser());
 		props.put("common.binlog.alone.dump.global.pool.password", dbInstance.getPwd());
+		//wheresql处理	
+		props.put("common.binlog.alone.dump.global.ori.wheresql", dump.getWheresql());
 		DumpEnum dumpEnum = dump.getDumpEnum();
 		if (dumpEnum != null && StringUtil.isNotNull(dumpEnum.getPluginJar())) {// 插件处理
 			File rootDir = new File(System.getenv("DUCKULA_DATA"));

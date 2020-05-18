@@ -3,19 +3,13 @@ package net.wicp.tams.duckula.common.beans;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.duckula.common.constant.DumpEnum;
 import net.wicp.tams.duckula.common.constant.MiddlewareType;
 import net.wicp.tams.duckula.plugin.beans.Rule;
-import net.wicp.tams.duckula.plugin.constant.RuleItem;
 
 @Data
-@Slf4j
 public class Dump {
 	private String id;
 	private String dbinst;// 数据库实例Id
@@ -25,7 +19,7 @@ public class Dump {
 	// private String[] primarys;
 	private Integer numDuan;
 	private String schedule;// 如果是定时器模式才设置
-	// private String wheresql;// where语句
+	private String wheresql;// where语句
 	private String remark;
 
 	private String busiPlugin;// 业务用的插件
@@ -44,8 +38,8 @@ public class Dump {
 
 	private String imageVersion;
 	private String namespace;
-	
-	private int connectMaxNum=200;//连接池最大连接数,默认200
+
+	private int connectMaxNum = 200;// 连接池最大连接数,默认200
 
 	private final List<Rule> ruleList = new ArrayList<>();
 
@@ -56,13 +50,14 @@ public class Dump {
 		this.ruleList.addAll(buildRules);
 	}
 
-	/*
-	 * public String packFromstr() { if (StringUtil.isNotNull(this.wheresql)) {
-	 * this.wheresql = StringUtil.trimSpace(this.wheresql); if
-	 * (!this.getWheresql().substring(0, 5).equalsIgnoreCase("where")) {
-	 * this.wheresql = "where " + this.wheresql; } } String fromstr =
-	 * String.format("from %s %s", this.getDb_tb(),
-	 * StringUtil.isNull(this.getWheresql()) ? "where 1=1 " : this.getWheresql());
-	 * return fromstr; }
-	 */
+	public String getWheresql() {
+		if (StringUtil.isNotNull(this.wheresql)) {
+			this.wheresql = StringUtil.trimSpace(this.wheresql);
+			if (!this.wheresql.substring(0, 5).equalsIgnoreCase("where")) {
+				this.wheresql = "where " + this.wheresql;
+			}
+		}
+		return this.wheresql;
+	}
+
 }

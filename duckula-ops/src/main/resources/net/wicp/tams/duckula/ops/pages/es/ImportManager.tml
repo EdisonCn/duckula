@@ -12,6 +12,10 @@
    <t:block id="query">
        <table class="frame_table_list_4">
 		 <tr>
+		       <td class="frame_table_list_4_righttext">任务Id</td>
+				<td>
+				   <r:validatebox name="id"/>
+				</td>
 			    <td class="frame_table_list_4_righttext">数据库实例</td>
 				<td>
 				   <r:validatebox name="taskOnlineId"/>
@@ -19,9 +23,6 @@
 			 	<td class="frame_table_list_4_righttext">索引mapping</td>			 	    
 			 	<td>
 			 	   <r:validatebox name="mappingId"/>
-			 	</td>
-			 	<td class="frame_table_list_4_righttext"></td>
-			 	<td>
 			 	</td>
 			 	<td class="frame_table_list_4_righttext"></td>
 		 </tr>
@@ -117,8 +118,9 @@
 			         <td name="trdb">
 			            <r:numberbox  name="connectMaxNum" style="width:60px;" min="20" max="1000" missingMessage="drds分库分表要注意" required="false"/>
 	                 </td>
-			         <td class="frame_table_list_2_righttext"></td>
+			         <td class="frame_table_list_2_righttext">wheresql</td>
 			         <td>
+			            <r:validatebox id="wheresql_save" name="wheresql" style="width:300px;" required="false"/>
 	                 </td>
 			      </tr>
 			      <tr name="showmodel">

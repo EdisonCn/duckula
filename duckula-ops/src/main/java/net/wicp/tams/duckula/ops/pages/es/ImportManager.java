@@ -1,7 +1,5 @@
 package net.wicp.tams.duckula.ops.pages.es;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +7,6 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tapestry5.annotations.OnEvent;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.SessionState;
@@ -29,8 +26,6 @@ import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.StringUtil;
-import net.wicp.tams.common.apiext.jdbc.JdbcConnection;
-import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
 import net.wicp.tams.common.apiext.json.EasyUiAssist;
 import net.wicp.tams.common.callback.IConvertValue;
 import net.wicp.tams.component.annotation.HtmlJs;
@@ -40,12 +35,10 @@ import net.wicp.tams.component.tools.TapestryAssist;
 import net.wicp.tams.duckula.common.ZkClient;
 import net.wicp.tams.duckula.common.ZkUtil;
 import net.wicp.tams.duckula.common.beans.Dump;
-import net.wicp.tams.duckula.common.beans.Task;
 import net.wicp.tams.duckula.common.constant.CommandType;
 import net.wicp.tams.duckula.common.constant.TaskPattern;
 import net.wicp.tams.duckula.common.constant.ZkPath;
 import net.wicp.tams.duckula.ops.beans.Server;
-import net.wicp.tams.duckula.ops.servicesBusi.DuckulaUtils;
 import net.wicp.tams.duckula.ops.servicesBusi.IDuckulaAssit;
 
 @Slf4j
@@ -61,28 +54,26 @@ public class ImportManager {
 	private IReq req;
 	@Inject
 	private IDuckulaAssit duckulaAssit;
-	
-	
+
 	@SessionState
 	@Property
 	private String namespace;
 
 	private boolean namespaceExists;
-	
+
 	public boolean isNeedServer() {
 		return TaskPattern.isNeedServer();
 	}
-	
-	
+
 	public String getDefaultNamespace() {
 		String namespaceTrue = "all".equalsIgnoreCase(namespace) ? "" : namespace;
 		return StringUtil.hasNull(namespaceTrue, Conf.get("common.kubernetes.apiserver.namespace.default"));
 	}
-	
+
 	public String getDefaultImageVersion() {
 		return Conf.get("duckula.task.image.tag");
 	}
-	
+
 	public String getColDifferent() {
 		if (isNeedServer()) {
 			return "{field:'hosts',width:100,title:'任务主机'}";
@@ -102,13 +93,20 @@ public class ImportManager {
 		List<Dump> retlist = (List<Dump>) CollectionUtils.select(dumps, new Predicate() {
 			@Override
 			public boolean evaluate(Object object) {
-				Dump temp = (Dump) object;				
+				Dump temp = (Dump) object;
 				if (!TaskPattern.isNeedServer() && !"all".equals(namespace)
 						&& !namespace.equalsIgnoreCase(temp.getNamespace())) {
 					return false;
 				}
-				
+
 				boolean ret = true;
+				if (StringUtil.isNotNull(dumpparam.getId())) {
+					ret = temp.getId().indexOf(dumpparam.getId()) >= 0;
+					if (!ret) {
+						return false;
+					}
+				}
+
 				if (StringUtil.isNotNull(dumpparam.getDbinst())) {
 					ret = temp.getDbinst().indexOf(dumpparam.getDbinst()) >= 0;
 					if (!ret) {
@@ -118,7 +116,7 @@ public class ImportManager {
 				return ret;
 			}
 		});
-		
+
 		String retstr = null;
 		if (isNeedServer()) {
 			final Map<String, List<String>> taskRunServerMap = new HashMap<>();
@@ -145,13 +143,13 @@ public class ImportManager {
 			convertsMap.put("hostNum", hostNumConvert);
 			convertsMap.put("hosts", hostNumList);
 
-			retstr = EasyUiAssist.getJsonForGridAlias(retlist, new String[] { "id,hostNum", "id,hosts" },
-					convertsMap, retlist.size());
-		}else {
+			retstr = EasyUiAssist.getJsonForGridAlias(retlist, new String[] { "id,hostNum", "id,hosts" }, convertsMap,
+					retlist.size());
+		} else {
 			IConvertValue<String> podStatus = new IConvertValue<String>() {
 				@Override
 				public String getStr(String keyObj) {
-					keyObj=CommandType.dump.getK8sId(keyObj);
+					keyObj = CommandType.dump.getK8sId(keyObj);
 					Map<ResourcesType, String> queryStatus = TillerClient.getInst().queryStatus(keyObj);
 					String valueStr = queryStatus.get(ResourcesType.Pod);
 					String colValue = ResourcesType.Pod.getColValue(valueStr, "STATUS");
@@ -160,7 +158,7 @@ public class ImportManager {
 			};
 			Map<String, IConvertValue<String>> convertsMap = new HashMap<>();
 			convertsMap.put("podStatus", podStatus);
-			retstr = EasyUiAssist.getJsonForGridAlias(retlist, new String[] { "id,podStatus"}, convertsMap,
+			retstr = EasyUiAssist.getJsonForGridAlias(retlist, new String[] { "id,podStatus" }, convertsMap,
 					retlist.size());// .getJsonForGridAlias(retlist, retlist.size());
 		}
 		return TapestryAssist.getTextStreamResponse(retstr);
@@ -245,7 +243,7 @@ public class ImportManager {
 		}
 		return null;
 	}
-	
+
 	public TextStreamResponse onStartK8sTask() {
 		long curtime1 = new Date().getTime();
 		String taskid = request.getParameter("taskid");
@@ -266,19 +264,19 @@ public class ImportManager {
 		final Dump dumpparam = TapestryAssist.getBeanFromPage(Dump.class, requestGlobals);
 		if (StringUtil.isNull(dumpparam.getId())) {
 		}
-		//String[] split = dumpparam.getDb_tb().split("\\.");
-		//dumpparam.setPrimarys(primarys);
+		// String[] split = dumpparam.getDb_tb().split("\\.");
+		// dumpparam.setPrimarys(primarys);
 		Result createOrUpdateNode = ZkClient.getInst().createOrUpdateNode(ZkPath.dumps.getPath(dumpparam.getId()),
 				JSONObject.toJSONString(dumpparam));
 		return TapestryAssist.getTextStreamResponse(createOrUpdateNode);
 	}
 
 	public TextStreamResponse onDel() {
-		String dumpId=request.getParameter("id");
+		String dumpId = request.getParameter("id");
 		Result del = ZkUtil.del(ZkPath.dumps, dumpId);
 		return TapestryAssist.getTextStreamResponse(del);
 	}
-	
+
 	public void onActivate(String namespace) {
 		this.namespace = namespace;
 	}
