@@ -15,6 +15,7 @@ RUN set -ex; \
     apk update upgrade; \
     apk add --no-cache --virtual .must  \
          'su-exec>=0.2' \
+          mysql-client \
           bash; \
     apk add --no-cache --virtual .duckuladepent  \
           tar; 
