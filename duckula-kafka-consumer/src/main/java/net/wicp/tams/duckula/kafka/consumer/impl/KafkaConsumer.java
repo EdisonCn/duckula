@@ -305,6 +305,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 	 * @param addProp      附加信息，来自task,用于反查
 	 */
 	private void duckulaEventToDatas(List<T> datas, DuckulaEvent duckulaEvent, Rule rule, String addProp) {
+		Connection connection = null;
 		try {
 			if (rule == null) {
 				rule = ruleManager.findRule(duckulaEvent.getDb(), duckulaEvent.getTb());
@@ -312,9 +313,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 					return;
 				}
 			}
-
-			Connection connection = getConn(addProp);
-
+			connection = getConn(addProp);
 			String keymapkey = String.format("%s.%s", duckulaEvent.getDb(), duckulaEvent.getTb());
 			if (primarysMap.get(keymapkey) == null) {
 				synchronized (KafkaConsumer.class) {
@@ -340,7 +339,7 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 					}
 				}
 			}
-          //TODO  调试用
+			// TODO 调试用
 			Serializable[] keyValues = null;
 			try {
 				keyValues = new Serializable[primarysMap.get(keymapkey).length];
@@ -424,6 +423,13 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 			log.error("组装失败", e);
 			LoggerUtil.exit(JvmStatus.s15);
 			throw new ProjectExceptionRuntime(ExceptAll.duckula_es_formate);
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+				}
+			}
 		}
 	}
 
