@@ -10,10 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
@@ -315,17 +317,33 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 			}
 			connection = getConn(addProp);
 			String keymapkey = String.format("%s.%s", duckulaEvent.getDb(), duckulaEvent.getTb());
-			if (primarysMap.get(keymapkey) == null) {
+			if (ArrayUtils.isEmpty(primarysMap.get(keymapkey))) {
 				synchronized (KafkaConsumer.class) {
-					if (primarysMap.get(keymapkey) == null) {
-						String keyColName = rule.getItems().get(RuleItem.key);
-						String[] primarys;
-						if (StringUtil.isNull(keyColName)) {
-							primarys = MySqlAssit.getPrimary(connection, duckulaEvent.getDb(), duckulaEvent.getTb());
-						} else {
-							primarys = keyColName.split(",");
+					if (ArrayUtils.isEmpty(primarysMap.get(keymapkey))) {
+						while (true) {
+							String keyColName = rule.getItems().get(RuleItem.key);
+							String[] primarys;
+							if (StringUtil.isNull(keyColName)) {
+								primarys = MySqlAssit.getPrimary(connection, duckulaEvent.getDb(),
+										duckulaEvent.getTb());
+							} else {
+								log.info("use RuleItem.key,value:[{}]", keyColName);
+								primarys = keyColName.split(",");
+							}
+							if (ArrayUtils.isEmpty(primarys)) {
+								log.error("no key，the keymapkey:{}", keymapkey);
+								for (String key : primarysMap.keySet()) {
+									log.error("key:[{}],value:[{}]", key, primarysMap.get(key));
+								}
+								boolean reDoWait = TimeAssist.reDoWait("KafkaConsumer-primarys", 5);
+								if (reDoWait) {
+									LoggerUtil.exit(JvmStatus.s15);// 退出虚拟机
+								}
+							} else {
+								primarysMap.put(keymapkey, primarys);
+								break;
+							}
 						}
-						primarysMap.put(keymapkey, primarys);
 					}
 				}
 			}
@@ -361,6 +379,13 @@ public class KafkaConsumer<T> implements IConsumer<byte[]> {
 				// if(StringUtil.isNotNull(rule.getItems().get(RuleItem.addProp))) {//暂定drds
 				String scanstr = "";
 				build.append("select " + scanstr + " * from " + keymapkey + " where ");
+				// debug，如果没有找到key
+				if (ArrayUtils.isEmpty(primarysMap.get(keymapkey))) {
+					log.error("error primarys,keymapkey:[{}],primarysMap:", keymapkey);
+					for (String key : primarysMap.keySet()) {
+						log.error("key:[{}],value:[{}]", key, primarysMap.get(key));
+					}
+				}
 				for (int i = 0; i < primarysMap.get(keymapkey).length; i++) {
 					build.append(String.format(" %s=?", primarysMap.get(keymapkey)[i]));
 				}
