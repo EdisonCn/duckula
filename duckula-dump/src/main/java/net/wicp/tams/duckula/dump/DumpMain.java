@@ -20,6 +20,7 @@ import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.common.apiext.OSinfo;
 import net.wicp.tams.common.apiext.StringUtil;
 import net.wicp.tams.common.apiext.jdbc.MySqlAssit;
+import net.wicp.tams.common.binlog.alone.Config;
 import net.wicp.tams.common.binlog.dump.MainDump;
 import net.wicp.tams.common.constant.DateFormatCase;
 import net.wicp.tams.common.jdbc.DruidAssit;
@@ -53,7 +54,6 @@ public class DumpMain {
 			Properties configMiddleware = ConfUtil.configMiddleware(dump.getMiddlewareType(), dump.getMiddlewareInst());
 			Conf.overProp(configMiddleware);
 		}
-
 		log.info("----------------------创建zk临时文件-------------------------------------");
 		String curtimestr = DateFormatCase.yyyyMMddHHmmss.getInstanc().format(new Date());
 		String tempNodePath = IOUtil.mergeFolderAndFilePath(ZkPath.dumps.getPath(dumpId), curtimestr);
@@ -77,7 +77,7 @@ public class DumpMain {
 		props.put("common.binlog.alone.dump.global.pool.port", String.valueOf(dbInstance.getPort()));
 		props.put("common.binlog.alone.dump.global.pool.username", dbInstance.getUser());
 		props.put("common.binlog.alone.dump.global.pool.password", dbInstance.getPwd());
-		//wheresql处理	
+		// wheresql处理
 		props.put("common.binlog.alone.dump.global.ori.wheresql", dump.getWheresql());
 		DumpEnum dumpEnum = dump.getDumpEnum();
 		if (dumpEnum != null && StringUtil.isNotNull(dumpEnum.getPluginJar())) {// 插件处理
@@ -102,12 +102,12 @@ public class DumpMain {
 		Conf.overProp(props);
 		log.info("----------------------处理原文件配置-------------------------------------");
 		Properties newprops = Conf.replacePre("common.binlog.alone.dump.global.pool",
-				"common.jdbc.datasource." + MainDump.globleDatasourceName);
-		//设置最大联接数，用于drds较多表的情况
+				"common.jdbc.datasource." + Config.globleDatasourceName);
+		// 设置最大联接数，用于drds较多表的情况
 		newprops.put("common.jdbc.datasource.default.maxActive", dump.getConnectMaxNum());
-		log.info("the max connection:{}",dump.getConnectMaxNum());
-		Conf.overProp(newprops);	
-		Connection conn = DruidAssit.getConnection(MainDump.globleDatasourceName);
+		log.info("the max connection:{}", dump.getConnectMaxNum());
+		Conf.overProp(newprops);
+		Connection conn = DruidAssit.getConnection(Config.globleDatasourceName);
 		Properties dumpProps = new Properties();
 		List<String> dumpIds = new ArrayList<String>();
 		for (Rule rule : dump.getRuleList()) {
@@ -117,10 +117,12 @@ public class DumpMain {
 				String dumpIdTemp = dbtb[0] + "-" + dbtb[1];
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.db", dumpIdTemp), dbtb[0]);
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tb", dumpIdTemp), dbtb[1]);
-				//模式
-				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.dbOri", dumpIdTemp), Rule.buildOriRule(rule.getDbPattern()));
-				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tbOri", dumpIdTemp), Rule.buildOriRule(rule.getTbPattern()));
-				
+				// 模式
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.dbOri", dumpIdTemp),
+						Rule.buildOriRule(rule.getDbPattern()));
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tbOri", dumpIdTemp),
+						Rule.buildOriRule(rule.getTbPattern()));
+
 				dumpIds.add(dumpIdTemp);
 			}
 		}

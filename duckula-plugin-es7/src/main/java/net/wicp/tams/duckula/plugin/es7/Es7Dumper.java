@@ -18,11 +18,9 @@ import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.Result;
 import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.IOUtil;
-import net.wicp.tams.common.apiext.LoggerUtil;
-import net.wicp.tams.common.binlog.dump.bean.Dump;
-import net.wicp.tams.common.binlog.dump.bean.DumpEvent;
-import net.wicp.tams.common.binlog.dump.listener.IBusiSender;
-import net.wicp.tams.common.constant.JvmStatus;
+import net.wicp.tams.common.binlog.alone.dump.bean.Dump;
+import net.wicp.tams.common.binlog.alone.dump.bean.DumpEvent;
+import net.wicp.tams.common.binlog.alone.dump.listener.IBusiSender;
 import net.wicp.tams.common.constant.StrPattern;
 import net.wicp.tams.common.es.Action;
 import net.wicp.tams.common.es.EsData;
@@ -169,8 +167,7 @@ public class Es7Dumper implements IBusiSender<DumpEvent> {
 			BulkItemResponse[] retObjs = (BulkItemResponse[]) ret.retObjs();
 			for (BulkItemResponse bulkItemResponse : retObjs) {
 				if (bulkItemResponse.isFailed()) {
-					dataBuilders.getDump().getMetric().counter_send_error.inc();
-					log.error(bulkItemResponse.getId());// TODO 错误处理					
+					log.error(bulkItemResponse.getId());// TODO 错误处理
 				}
 			}
 			throw new RuntimeException("发送ES失败,由sendHander重试");

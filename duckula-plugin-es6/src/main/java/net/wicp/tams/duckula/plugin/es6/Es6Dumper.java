@@ -1,6 +1,17 @@
 package net.wicp.tams.duckula.plugin.es6;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+
 import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
 import net.wicp.tams.common.Conf;
 import net.wicp.tams.common.Result;
@@ -8,13 +19,17 @@ import net.wicp.tams.common.apiext.CollectionUtil;
 import net.wicp.tams.common.apiext.IOUtil;
 import net.wicp.tams.common.apiext.LoggerUtil;
 import net.wicp.tams.common.apiext.StringUtil;
-import net.wicp.tams.common.binlog.dump.bean.Dump;
-import net.wicp.tams.common.binlog.dump.bean.DumpEvent;
-import net.wicp.tams.common.binlog.dump.listener.IBusiSender;
+import net.wicp.tams.common.binlog.alone.dump.bean.Dump;
+import net.wicp.tams.common.binlog.alone.dump.bean.DumpEvent;
+import net.wicp.tams.common.binlog.alone.dump.listener.IBusiSender;
 import net.wicp.tams.common.constant.JvmStatus;
 import net.wicp.tams.common.constant.StrPattern;
-import net.wicp.tams.common.es.*;
+import net.wicp.tams.common.es.Action;
+import net.wicp.tams.common.es.EsData;
 import net.wicp.tams.common.es.EsData.Builder;
+import net.wicp.tams.common.es.EsObj;
+import net.wicp.tams.common.es.RelaValue;
+import net.wicp.tams.common.es.UpdateSet;
 import net.wicp.tams.common.es.bean.MappingBean;
 import net.wicp.tams.common.es.bean.MappingBean.Propertie;
 import net.wicp.tams.common.es.client.ESClient;
@@ -22,15 +37,6 @@ import net.wicp.tams.common.es.client.singleton.ESClientOnlyOne;
 import net.wicp.tams.common.es.client.threadlocal.EsClientThreadlocal;
 import net.wicp.tams.duckula.plugin.beans.Rule;
 import net.wicp.tams.duckula.plugin.constant.RuleItem;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /****
  * 需要创建好索引eg: IndexParamsBean indexParamsBean =
@@ -130,7 +136,7 @@ public class Es6Dumper implements IBusiSender<DumpEvent> {
 					esObjBuilder.setId(idstr);
 					if (relaObjMap.get(curRule) != null && !relaObjMap.get(curRule).isEmpty()) {
 						String tableNameTrue = (tablename.length() >= curRule.getTbLength()) ? tablename.substring(0, curRule.getTbLength()) : tablename;
-	                    esObjBuilder.setRelaValue(RelaValue.newBuilder().setName(tablename));// tams_relations
+	                    esObjBuilder.setRelaValue(RelaValue.newBuilder().setName(tableNameTrue));// tams_relations
 					}
 				} else {// 有关联关系且不是根元素
 					String relaName = MappingBean.getRelaName(relaObjMap.get(curRule), tablename,curRule.getTbLength());
@@ -152,7 +158,6 @@ public class Es6Dumper implements IBusiSender<DumpEvent> {
 			BulkItemResponse[] retObjs = (BulkItemResponse[]) ret.retObjs();
 			for (BulkItemResponse bulkItemResponse : retObjs) {
 				if (bulkItemResponse.isFailed()) {
-					dataBuilders.getDump().getMetric().counter_send_error.inc();
 					log.error(bulkItemResponse.getId());// TODO 错误处理
 				}
 			}
