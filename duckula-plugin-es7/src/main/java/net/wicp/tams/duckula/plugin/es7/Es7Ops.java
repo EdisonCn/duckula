@@ -36,7 +36,7 @@ public class Es7Ops implements IOps {
             synchronized (Es7Ops.class) {
                 if (!esclientmap.containsKey(cluster)) {
                     Properties configMiddleware = PluginAssit.configMiddleware("es", cluster);
-                    ESClient eSClient = new ESClient(configMiddleware);
+                    ESClient eSClient = new ESClient(configMiddleware,null);
                     esclientmap.put(cluster, eSClient);
                 }
             }
@@ -163,7 +163,7 @@ public class Es7Ops implements IOps {
             // getESClient(cluster).indexDel(mappingparam.getIndex());
 
             createIndex = StringUtils.equalsAnyIgnoreCase("{}",content)?
-                    Result.getSuc():getESClient(cluster).putMapping(index,proMappingBean.toString(),type);
+                    Result.getSuc():getESClient(cluster).updateIndex(index,proMappingBean);
             // createIndex = Result.getSuc();
         } else {
 //                mappingparam.setId(index + "-" + type);

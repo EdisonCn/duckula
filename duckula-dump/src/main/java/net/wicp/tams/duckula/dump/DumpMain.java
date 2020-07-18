@@ -1,6 +1,5 @@
 package net.wicp.tams.duckula.dump;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.Connection;
@@ -81,9 +80,9 @@ public class DumpMain {
 		props.put("common.binlog.alone.dump.global.ori.wheresql", dump.getWheresql());
 		DumpEnum dumpEnum = dump.getDumpEnum();
 		if (dumpEnum != null && StringUtil.isNotNull(dumpEnum.getPluginJar())) {// 插件处理
-			File rootDir = new File(System.getenv("DUCKULA_DATA"));
-			String pluginDri = IOUtil.mergeFolderAndFilePath(rootDir.getPath(), dumpEnum.getPluginJar());
-			props.put("common.binlog.alone.dump.global.busiPluginDir", pluginDri);
+			String pluginDir = IOUtil.mergeFolderAndFilePath(ConfUtil.getDatadir(false),
+					dump.getDumpEnum().getPluginJar());
+			props.put("common.binlog.alone.dump.global.busiPluginDir", String.format("abs:%s", pluginDir));
 		}
 		// 线程数处理
 		if (dump.getBaseDataNum() != null) {
@@ -111,8 +110,8 @@ public class DumpMain {
 		Properties dumpProps = new Properties();
 		List<String> dumpIds = new ArrayList<String>();
 		for (Rule rule : dump.getRuleList()) {
-			List<String[]> allTables = MySqlAssit.getAllTables(conn, rule.getDbPattern(), rule.getTbPattern());
-			// rule.getItems().get(RuleItem.index);
+			//List<String[]> allTables = MySqlAssit.getAllTables(conn, rule.getDbPattern(), rule.getTbPattern());
+			List<String[]> allTables=new ArrayList<String[]>();allTables.add(new String[] {"tower_invoice2_nfna_0000","invoice_purchaser_main_h2cj_01"});//测试用
 			for (String[] dbtb : allTables) {
 				String dumpIdTemp = dbtb[0] + "-" + dbtb[1];
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.db", dumpIdTemp), dbtb[0]);
@@ -123,16 +122,17 @@ public class DumpMain {
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.tbOri", dumpIdTemp),
 						Rule.buildOriRule(rule.getTbPattern()));
 
+				// 插件
+				JSONObject object = rule.buildRuleItem();
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.busiPluginConfig", dumpIdTemp),
+						object.toJSONString());
+				//TODO 测试用wheresql=where status=1
+				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.wheresql", dumpIdTemp),
+						"where id=292558786221531136");
 				dumpIds.add(dumpIdTemp);
 			}
 		}
 		log.info("----------------------插件处理配置-------------------------------------");
-		if (StringUtil.isNotNull(dump.getDumpEnum().getPluginJar())) {// 有插件
-			String pluginDir = IOUtil.mergeFolderAndFilePath(ConfUtil.getDatadir(false),
-					dump.getDumpEnum().getPluginJar());
-			dumpProps.put("common.binlog.alone.dump.global.busiPluginDir", pluginDir);
-		}
-
 		if (StringUtil.isNotNull(dump.getDumpEnum().getPluginClassName())) {// mysql是内置的
 			dumpProps.put("common.binlog.alone.dump.global.ori.busiSender", dump.getDumpEnum().getPluginClassName());
 		}
