@@ -110,8 +110,8 @@ public class DumpMain {
 		Properties dumpProps = new Properties();
 		List<String> dumpIds = new ArrayList<String>();
 		for (Rule rule : dump.getRuleList()) {
-			//List<String[]> allTables = MySqlAssit.getAllTables(conn, rule.getDbPattern(), rule.getTbPattern());
-			List<String[]> allTables=new ArrayList<String[]>();allTables.add(new String[] {"tower_invoice2_nfna_0000","invoice_purchaser_main_h2cj_01"});//测试用
+			List<String[]> allTables = MySqlAssit.getAllTables(conn, rule.getDbPattern(), rule.getTbPattern());
+			//List<String[]> allTables=new ArrayList<String[]>();allTables.add(new String[] {"tower_invoice2_nfna_0000","invoice_purchaser_main_h2cj_01"});//测试用
 			for (String[] dbtb : allTables) {
 				String dumpIdTemp = dbtb[0] + "-" + dbtb[1];
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.db", dumpIdTemp), dbtb[0]);
@@ -126,9 +126,9 @@ public class DumpMain {
 				JSONObject object = rule.buildRuleItem();
 				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.busiPluginConfig", dumpIdTemp),
 						object.toJSONString());
-				//TODO 测试用wheresql=where status=1
-				dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.wheresql", dumpIdTemp),
-						"where id=292558786221531136");
+				// TODO 测试用wheresql=where status=1
+				//dumpProps.put(String.format("common.binlog.alone.dump.ori.%s.wheresql", dumpIdTemp),
+				//		"where id=292558786221531136");
 				dumpIds.add(dumpIdTemp);
 			}
 		}
